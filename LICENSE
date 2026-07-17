@@ -1,0 +1,65 @@
+PROPRIETARY LICENSE — SOURCE-AVAILABLE, STUDY ONLY
+
+Copyright (c) 2026 ALKABIL. All rights reserved.
+
+This repository is made publicly readable ("source-available") solely so that
+others may study how it works. It is NOT open source. No right to use, copy,
+deploy, or distribute this work is granted except as expressly stated below.
+
+
+1. DEFINITIONS
+
+   "The Work" means everything in this repository: the source code (HTML, CSS,
+   JavaScript), the documentation, and the creative content (text, images,
+   logos, and artwork), excluding the Third-Party Components described in
+   Section 5.
+
+   "You" means any person or entity accessing the Work.
+
+   "Study" means viewing, reading, and running the Work locally on your own
+   device for the sole purpose of personal, non-commercial learning and
+   evaluation.
+
+
+2. PERMITTED WITHOUT PERMISSION — STUDY
+
+   You may view and read the source of the Work, and run it locally on your own
+   machine, for Study only. You may take private notes and learn from the
+   techniques it demonstrates.
+
+
+3. PROHIBITED WITHOUT PERMISSION
+
+   Except as allowed by Section 2, you may NOT, without prior written
+   permission from ALKABIL:
+
+   a. copy, reproduce, or redistribute the Work or any part of it;
+   b. deploy, host, or publish the Work or any derivative of it, publicly or
+      privately, on any server or service;
+   c. use the creative content (text, images, logos, artist photographs, or
+      album artwork) in any other project or medium;
+   d. use the Work or any part of it for commercial purposes;
+   e. remove or alter copyright, license, or attribution notices.
+
+
+4. ARTIST CONTENT
+
+   Artist names, likenesses, biographies, photographs, and release artwork
+   appearing in the Work belong to the respective artists and/or ALKABIL.
+   Nothing in this license grants any right to them.
+
+
+5. THIRD-PARTY COMPONENTS
+
+   The webfonts (minerva-modern, anziano) are served by Adobe Fonts under
+   Adobe's own license terms and are not part of the Work.
+
+
+6. NO WARRANTY
+
+   THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT
+   SHALL ALKABIL BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+   FROM THE WORK OR ITS USE.
+
+
+For permissions beyond Study, contact: info@alkabil.audio

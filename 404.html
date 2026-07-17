@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Every path here is root-absolute (/css/…, /assets/…): a 404 can be
+       served at ANY depth (e.g. /artists/typo), so relative paths would
+       break. Picked up automatically by both GitHub Pages and Netlify. -->
+  <title>404 not found &mdash; ALKABIL</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="//use.typekit.net/ik/PlyFPvqsCfQ4HX6FsxYUDgJKAzX61jLcUuyxMvUKriXfeTSgfFHN4UJLFRbh52jhWDjhZRyKFR8cwQjDFQFRwcmcFRsyFRZqZgGMJ6ol-Ao8S1ZyOAuzZemkdKJYjAoE-AB0dkG4fO9nIMMjgfMfH6qJCKCbMg6YJMJ7fbKXHUMMeMt6MKG4fOwnIMMjIPMfH6GJzGCfIMIjgfMfH6GJztCfIMIjgkMfH6GJzjCfIMIj2KMfqMYVu0pag6.js" async onload="try{Typekit.load();}catch(e){}"></script>
+  <style>
+  /* The "NEWEST /// release \\\" section's look, repurposed: two marquees
+     scrolling "404" and "not found" around a centered go-back link. */
+  .nf-wrap {
+    min-height: 100vh;
+    display: grid;
+    align-content: center;
+    gap: 3rem;
+  }
+  .nf-center { text-align: center; }
+  .nf-center a {
+    font-family: var(--heading-font);
+    text-transform: uppercase;
+    font-size: var(--h4-size);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
+  .nf-center a:hover { opacity: 0.6; }
+  </style>
+</head>
+<body class="theme-black">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <nav class="nav-left"></nav>
+      <div class="branding"><a href="/">ALKABIL</a></div>
+      <div class="header-right"></div>
+    </div>
+  </header>
+
+  <main class="nf-wrap">
+    <div class="marquee" style="--speed: 26s;" aria-label="404">
+      <div class="track" aria-hidden="true">
+        <span>404&nbsp;///</span><span>404&nbsp;///</span><span>404&nbsp;///</span>
+        <span>404&nbsp;///</span><span>404&nbsp;///</span><span>404&nbsp;///</span>
+      </div>
+    </div>
+    <div class="nf-center">
+      <a href="/">go back</a>
+    </div>
+    <div class="marquee reverse" style="--speed: 26s;" aria-label="not found">
+      <div class="track" aria-hidden="true">
+        <span>not&nbsp;found&nbsp;\\\</span><span>not&nbsp;found&nbsp;\\\</span><span>not&nbsp;found&nbsp;\\\</span>
+        <span>not&nbsp;found&nbsp;\\\</span><span>not&nbsp;found&nbsp;\\\</span><span>not&nbsp;found&nbsp;\\\</span>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
