@@ -1,9 +1,0 @@
-# Security headers — applied by Netlify (GitHub Pages ignores this file).
-# CSP: this site's own scripts/styles/images, plus Adobe Typekit for the
-# webfonts (minerva-modern / anziano). Nothing may iframe this site.
-/*
-  X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://use.typekit.net; style-src 'self' 'unsafe-inline' https://use.typekit.net; img-src 'self' data: https://p.typekit.net; font-src 'self' data: https://use.typekit.net; connect-src 'self' https://use.typekit.net https://p.typekit.net https://performance.typekit.net; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
