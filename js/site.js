@@ -59,20 +59,43 @@ function linkHTML(label, dest) {
     : '<a href="' + url(dest) + '">' + label + '</a>';
 }
 
+/* ============ HEADER SCROLL STATE ============
+   The header bar is transparent at the top of the page and its faint red tint
+   fades in once scrolled past HEADER_SHOW_AFTER, fading back out on return to
+   the very top (the CSS transition does the fading; this only toggles the
+   class).
+
+   Exception: only pages that OPEN on the dark hero can carry white nav text on a
+   transparent bar. Every other page (info, artists, artist pages) begins on a
+   white section, so they keep the tinted bar permanently — otherwise the nav
+   would be white-on-white and invisible. The dark hero is detected by the
+   presence of `.hero-title`. */
+const HEADER_SHOW_AFTER = 40;   // px scrolled before the bar tints in
+function wireHeaderScroll(header) {
+  if (!document.querySelector('.hero-title')) { header.classList.add('scrolled'); return; }
+  const sync = () => header.classList.toggle('scrolled', window.scrollY > HEADER_SHOW_AFTER);
+  sync();
+  addEventListener('scroll', sync, { passive: true });
+}
+
 /* ============ HEADER (+ mobile menu) ============ */
 function buildHeader(header) {
+  /* Releases sits in the LEFT nav alongside Info/Artists; the right side keeps
+     just the Instagram icon and the burger. */
   header.innerHTML =
     '<div class="header-inner">' +
       '<nav class="nav-left">' +
         NAV_LINKS.map(([l, d]) => linkHTML(l, d)).join('') +
+        linkHTML(RELEASES[0], RELEASES[1]) +
       '</nav>' +
       '<div class="branding"><a href="' + url('index.html') + '">ALKABIL</a></div>' +
       '<div class="header-right">' +
-        '<nav>' + linkHTML(RELEASES[0], RELEASES[1]) + '</nav>' +
         '<a class="social-icon" href="' + INSTAGRAM_URL + '" target="_blank" rel="noopener" aria-label="Instagram">' + IG_SVG + '</a>' +
         '<button class="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>' +
       '</div>' +
     '</div>';
+
+  wireHeaderScroll(header);
 
   /* mobile menu — same links, built once and appended to <body> */
   const menu = document.createElement('div');
