@@ -583,9 +583,11 @@ js/site.js                  injects header/menu/footer, artist grid +
                             prev/next (from the ARTISTS registry), the
                             copyright year, seamless marquees, newsletter
 assets/                     all images
-assets/favicon.png          browser-tab icon (256×256, from the label mark)
+assets/favicon.svg          browser-tab icon — the red label mark (primary)
+assets/favicon.png          256×256 PNG fallback of the same mark
+assets/logo-red.png         red-mark source for regenerating favicon.png
 assets/fonts/               Academico woff2 (self-hosted)
-tools/make-favicon.py       regenerates assets/favicon.png from logo-white.png
+tools/make-favicon.py       regenerates assets/favicon.png from logo-red.png
 _source/                    reference copies of the original Squarespace
                             pages this was rebuilt from (not linked
                             anywhere — safe to delete or .gitignore)
@@ -593,13 +595,21 @@ _source/                    reference copies of the original Squarespace
 _headers, _redirects        Netlify-only (ignored by GitHub Pages)
 ```
 
-**Favicon.** Every page links `assets/favicon.png` as `type="image/png"`. It's
-a 256×256 PNG rendered from the label mark (`assets/logo-white.png`) — white on
-a black square so it reads in both light and dark browser tabs. Regenerate it
-after changing the logo with `python tools/make-favicon.py` (needs Pillow).
-Note: a `.png` referenced as `image/png` is deliberate — the earlier build
-shipped a PNG misnamed `favicon.ico`, which browsers refused to decode as an
-icon and so showed no favicon at all.
+**Favicon.** The tab icon is the red "Logo Red" label mark. Every page links it
+twice, primary first:
+
+```html
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png"     href="assets/favicon.png">
+```
+
+Modern browsers use the crisp vector `favicon.svg`; the `favicon.png` (256×256)
+is the fallback for those that don't. Both are the red glyph on a transparent
+background, so it reads on light and dark browser chrome alike. **To change it**,
+replace `assets/favicon.svg` (any single-colour SVG works) and regenerate the
+PNG from a raster source: drop the new mark at `assets/logo-red.png` and run
+`python tools/make-favicon.py` (needs Pillow). Paths are relative on normal
+pages and `../` on artist pages; `404.html` uses root-absolute `/assets/…`.
 
 **The grid.** The original Squarespace "fluid engine" laid blocks on a
 24-column grid; the rebuild keeps those exact placements. A section's content
@@ -717,6 +727,21 @@ served-at-root requirement, so do it only once the site lives at
 ---
 
 ## 6. Changelog
+
+### 2026-07-17 — hero title scales instead of wrapping
+
+- `ALKABIL.AUDIO` no longer wraps letter-by-letter on smaller desktop widths:
+  `.hero-title h2` is now `white-space: nowrap` and sized with container-query
+  units (`min(var(--h2-size), 11cqi)`, `.hero-title` is `container-type:
+  inline-size`) so it scales down to its column, capped at the normal h2 size.
+  A `clamp()` line remains as the fallback for browsers without container units.
+
+### 2026-07-17 — red-logo favicon
+
+- Favicon replaced with the red "Logo Red" label mark. Added `assets/favicon.svg`
+  (vector, primary) + a regenerated `assets/favicon.png` (256×256 fallback);
+  every page (and 404) now links the SVG then the PNG. `tools/make-favicon.py`
+  and its source (`assets/logo-red.png`) updated accordingly.
 
 ### 2026-07-17 — multiple-releases guide
 
