@@ -345,10 +345,19 @@ body.menu-open { overflow: hidden; }
   max-width: 190px;      /* keep the mark modest — it was filling the cell */
   height: auto;
 }
-.hero-title { text-align: right; }          /* ALKABIL.AUDIO sits on the right */
-/* fluid so it fills the width on desktop (capped at the normal h2 size) but
-   shrinks to fit small screens instead of being clipped by the section */
-.hero-title h2 { font-size: clamp(1.5rem, 7.5vw, var(--h2-size)); }
+.hero-title {
+  text-align: right;              /* ALKABIL.AUDIO sits on the right */
+  container-type: inline-size;    /* so the title sizes to THIS column's width */
+}
+/* One line that scales to its column: it never wraps (overrides the heading
+   break-word safety net) and shrinks on smaller screens instead of stacking
+   letters. Capped at the normal h2 size on wide screens. The clamp() is the
+   fallback for browsers without container-query units. */
+.hero-title h2 {
+  white-space: nowrap;
+  font-size: clamp(1.5rem, 7vw, var(--h2-size));
+  font-size: min(var(--h2-size), 11cqi);
+}
 .hero-tagline {
   font-family: var(--heading-font);
   text-transform: uppercase;
