@@ -15,6 +15,7 @@ Contents:
    - [1.2 Change the newest release (home page)](#12-change-the-newest-release-home-page)
    - [1.3 Edit the FAQ (Info page)](#13-edit-the-faq-info-page)
    - [1.4 Change colors](#14-change-colors)
+   - [1.4a The header bar: scroll fade, height, width](#14a-the-header-bar-scroll-fade-height-width)
    - [1.5 The marquees](#15-the-marquees)
    - [1.6 Fonts](#16-fonts)
    - [1.7 The newsletter form](#17-the-newsletter-form)
@@ -27,6 +28,7 @@ Contents:
    - [1.14 Writing HTML here — a mini style guide](#114-writing-html-here--a-mini-style-guide)
    - [1.15 The hero concentric-ring parallax](#115-the-hero-concentric-ring-parallax)
    - [1.16 The film-grain / static overlay](#116-the-film-grain--static-overlay)
+   - [1.17 Info page: matching photo sizes and the FAQ open animation](#117-info-page-matching-photo-sizes-and-the-faq-open-animation)
 2. **[How the site is organized](#2-how-the-site-is-organized)**
 3. **[Deploy and local preview](#3-deploy-and-local-preview)**
 4. **[Links and URLs](#4-links-and-urls)**
@@ -247,7 +249,8 @@ In `index.html`, the last section before the footer:
 ```
 
 Add or remove whole `<details>` blocks; the +/× icon and the divider lines
-come from CSS (`.faq` in `css/style.css`), no JS involved.
+come from CSS (`.faq` in `css/style.css`), no JS involved. Keep the inner
+`<div class="faq-answer">` wrapper — the open animation (§1.17) needs it.
 
 ### 1.4 Change colors
 
@@ -266,12 +269,48 @@ Sections pick their palette with a theme class on the `<section>`:
 `theme-bright` (black on light gray) — same trio as the Squarespace themes
 the original used.
 
-**The red frosted bars.** Both the fixed desktop **header** (`.site-header`) and
-the full-screen mobile **menu** (`.mobile-menu`) share the same tint —
-`rgba(var(--hero-red), 0.72)` over a backdrop blur. Note the alpha is
-deliberately high: they sit over the **dark** hero, and a red at low opacity
-composites down to near-black there (so it *looks* black) — keep it around `0.7`
-for the red to read, or change `--hero-red` itself to re-tint both at once.
+**The red frosted bars.** The fixed **header** (`.site-header`) and the
+full-screen mobile **menu** (`.mobile-menu`) both tint with `--hero-red`, but at
+different strengths — change `--hero-red` to re-tint both at once, or each rule's
+alpha to change one:
+
+| | Tint | Blur |
+|---|---|---|
+| Header, scrolled (`.site-header.scrolled`) | `rgba(var(--hero-red), 0.22)` | 6px |
+| Mobile menu (`.mobile-menu`) | `rgba(var(--hero-red), 0.72)` | 14px |
+
+The menu's alpha is deliberately high: it covers the **dark** hero, and a red at
+low opacity composites down to near-black there (so it *looks* black) — keep it
+around `0.7` for the red to read. How the header bar *behaves* — when it tints
+in, its height and width — is §1.4a.
+
+### 1.4a The header bar: scroll fade, height, width
+
+- **Fades in on scroll.** At the top of the page the bar is fully transparent;
+  `js/site.js` adds `.scrolled` once past `HEADER_SHOW_AFTER` (**40px** — change
+  that constant to make it appear sooner/later) and removes it again at the very
+  top. The fade itself is the CSS `transition` on `.site-header` (0.4s); the JS
+  only toggles the class.
+- **Pages without a dark hero keep the bar on.** Info, artists and artist pages
+  open on a *white* section, where a transparent bar would leave the white nav
+  text invisible — so they get `.scrolled` permanently. The dark hero is detected
+  by the presence of `.hero-title`; if you ever build another dark-topped page,
+  give it that class (or widen the check in `wireHeaderScroll`).
+- **Height.** `padding: 0.9rem var(--gutter)` on `.site-header`. If you change
+  it, update **`--header-h`** (currently `76px`) to match — pages that start
+  under the fixed bar use it as their top padding.
+- **Width.** The bar's contents are full-bleed: `.header-inner` has no
+  `max-width`, so it's inset only by `--gutter` (the same padding as the
+  "WE ARE …" section) and adapts to any screen automatically. The footer
+  (`.footer-inner`) works identically.
+- **Link order.** Info / Artists / Releases sit in the left nav
+  (`NAV_LINKS` + `RELEASES` in `js/site.js`); the right side holds the Instagram
+  icon and the burger. Below **880px** the left nav and icon hide and the burger
+  takes over.
+- **Mobile menu animation.** Opening fades the overlay (`menu-fade`) and staggers
+  the links in (`menu-item-in`, 0.25s each, 0.05s apart). The stagger is a list
+  of `:nth-child` delays — add more lines if the menu grows past six links. Both
+  are disabled under `prefers-reduced-motion`.
 
 ### 1.5 The marquees
 
@@ -433,6 +472,18 @@ Each release cover can be shown through a tilted-square **window** — a
 45°-rotated square (a diamond) — instead of a plain square. It's a CSS
 `clip-path`, so it's lean and needs no image editing.
 
+**Master switch — turn it off everywhere.** One line at the top of
+`css/style.css`, in `:root`:
+
+```css
+--cover-clip: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);   /* the window */
+--cover-clip: none;                                          /* effect OFF */
+```
+
+Set it to `none` and every cover reverts to a plain square, with no page edits.
+(The per-cover `clip-diamond` classes can stay where they are — with
+`--cover-clip: none` they simply do nothing.)
+
 **Turn it on/off per cover:** add or remove the `clip-diamond` class on the
 cover's `.release-cover` div:
 
@@ -442,19 +493,18 @@ cover's `.release-cover` div:
 </div>
 ```
 
-Remove `clip-diamond` → the full square shows again. It's applied to **both
-artist release covers** today; the home page's newest-release cover is left a
-plain square on purpose.
+Remove `clip-diamond` → that one cover shows as a full square. It's applied to
+**artist release covers only** today; the home page's newest-release cover is
+left a plain square on purpose.
 
 **Change the album image:** just swap the `<img src>` inside `.release-cover`
 (square art works best; the window crops the four corners).
 
-**Change the window shape:** edit the polygon in `css/style.css`:
+**Change the window shape:** edit the `--cover-clip` value in `:root` (it feeds
+the `clip-path`, so any `clip-path` value works):
 
 ```css
-.release-cover.clip-diamond img {
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);   /* diamond */
-}
+--cover-clip: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);   /* diamond */
 ```
 
 The polygon is a list of `x% y%` corner points. Examples to drop in:
@@ -462,12 +512,13 @@ The polygon is a list of `x% y%` corner points. Examples to drop in:
 - Diamond (current): `polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)`
 - Hexagon: `polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)`
 - Chamfered/cut corners: `polygon(12% 0, 88% 0, 100% 12%, 100% 88%, 88% 100%, 12% 100%, 0 88%, 0 12%)`
-- Circle instead: swap the whole line for `border-radius: 50%;` (and delete the
-  clip-path). 
+- Circle: `circle(50%)` — no polygon needed.
+- Off: `none`
 
 To make a **new** named window (so different covers can use different shapes),
-copy the rule under a new class (e.g. `.release-cover.clip-hex img { … }`) and
-put that class on the cover instead of `clip-diamond`.
+add a rule with its own class (e.g.
+`.release-cover.clip-hex img { clip-path: polygon(…); }`) and put that class on
+the cover instead of `clip-diamond`.
 
 ### 1.14 Writing HTML here — a mini style guide
 
@@ -565,6 +616,59 @@ keyframes in `css/style.css`:
 - **Blend**: `mix-blend-mode: overlay` — try `soft-light` (gentler) or
   `screen` (brighten-only).
 
+### 1.17 Info page: matching photo sizes and the FAQ open animation
+
+**The two photos.** The intro photo (beside the big "?") and the FAQ photo
+(beside "SOME ANSWERS") are set up to render at exactly the same size. That
+takes two things working together — change both if you resize one:
+
+1. **Same width** — their blocks carry the same grid columns in `info.html`:
+
+   ```html
+   <div class="blk info-img" style="--gd: 1/14/22/27;">   <!-- intro -->
+   <div class="blk info-img" style="--gd: 1/14/15/27;">   <!-- FAQ   -->
+   ```
+
+   The **column** numbers (`14` … `27`) are what set the width, and they match.
+   Note `27` is past the last content column, so both images bleed into the
+   right gutter, out to the page edge. The **row** numbers differ on purpose —
+   they only reserve vertical space in the grid (the intro section is taller),
+   not the image's size.
+
+2. **Same shape** — the `info-img` class gives both a shared box in
+   `css/style.css`:
+
+   ```css
+   .info-img img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+   ```
+
+   The source files aren't quite the same shape (3:2 vs ~1.57:1), so
+   `object-fit: cover` crops the difference rather than letting one render
+   taller. To change the proportions of both, edit `aspect-ratio` (e.g. `4/3`
+   for a squarer photo, `16/9` for a letterbox).
+
+This stays fully responsive: the width follows the grid cell and the height is
+derived from it, so on mobile — where the grid areas are ignored and blocks
+stack full-width — the two still match. **To swap either photo**, just change
+the `<img src>`; any reasonably wide image works, since the box crops it.
+
+**The FAQ open animation.** Opening a question slides its answer down instead
+of it popping in at full height, and the `+` rolls into an `×`. All in the
+`.faq` rules in `css/style.css`:
+
+- A native `<details>` only renders its content once open, so a CSS
+  *transition* never catches it — the reveal is a keyframe **animation**
+  (`faq-reveal`) that plays the moment the answer appears.
+- The slide is `grid-template-rows: 0fr → 1fr` on `.faq-answer`, which animates
+  a real height without a guessed `max-height` (so long answers can't get
+  clipped). The inner element carries the padding and `overflow: hidden` so it
+  clips itself while the row is still short.
+- **Speed**: the `0.34s` in both `faq-reveal` and the `summary::after`
+  transition — keep the two the same so the icon and the slide finish together.
+- **The icon**: `content: "+"` with `transform: rotate(225deg)` when open (a
+  half-turn into an ×). `rotate(45deg)` gives a plain × with no spin.
+- Both are disabled under `prefers-reduced-motion`.
+
 ---
 
 ## 2. How the site is organized
@@ -633,14 +737,14 @@ carry only `<header class="site-header"></header>` and
 links for depth, so there's no per-page or `../` bookkeeping for those.
 
 **The header is fixed and always on top** (`position: fixed; z-index: 1000`),
-so it persists as content scrolls under it. It's a translucent frosted bar — a
-semi-transparent dark backdrop (`background: rgba(0,0,0,0.55)`) with a
-`backdrop-filter: blur()` — carrying white nav/brand text. The dark backdrop
-gives consistent contrast over every section (dark hero, white pages, gray
-accent), so no page sets its own header color; tune the bar's darkness via that
-`rgba` alpha in `css/style.css`. Pages whose content begins at the very top add
-`padding-top: var(--header-h)` to their first section so nothing hides under the
-fixed bar.
+so it persists as content scrolls under it. It carries white nav/brand text on a
+faint red frosted tint that **fades in only once the page is scrolled** — over
+the dark hero it starts fully transparent. Pages that don't open on that dark
+hero keep the tint permanently, so the white text always has something behind
+it; no page sets its own header color. Pages whose content begins at the very
+top add `padding-top: var(--header-h)` to their first section so nothing hides
+under the fixed bar. Full details — the scroll threshold, height/`--header-h`,
+and the full-bleed width — are in §1.4a.
 
 **Section themes** (`theme-black` / `theme-white` / `theme-bright`) set
 background + text color; a `section-bg` div with an `<img>` inside makes a
@@ -728,7 +832,48 @@ served-at-root requirement, so do it only once the site lives at
 
 ## 6. Changelog
 
-### 2026-07-17 — hero title scales instead of wrapping
+Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-18 — info page: matched photos, animated FAQ
+
+- The FAQ photo (beside "SOME ANSWERS") now renders at the **same size** as the
+  intro photo: its block was widened to the same grid columns (`14/27`, which
+  also bleeds to the right edge) and both share a new `.info-img` 3:2
+  `aspect-ratio` + `object-fit: cover` box, so the slightly different source
+  aspects can't make one taller. Fluid at every width, including the mobile
+  full-width stack (§1.17).
+- FAQ answers now **slide open** instead of popping in: a `faq-reveal` keyframe
+  animating `grid-template-rows: 0fr → 1fr` (a real height slide, no
+  `max-height` guess), with the `+` rolling 225° into an `×` on the same 0.34s
+  timing, plus a subtle hover fade on each question. Disabled under
+  `prefers-reduced-motion` (§1.17).
+
+### 2026-07-18 — header on scroll, full-bleed chrome, menu fade, cover toggle
+
+- **Header tints in on scroll.** The bar is now fully transparent at the top of
+  the page; its red tint + blur fade in once scrolled past
+  `HEADER_SHOW_AFTER` (40px, `js/site.js`) and fade back out at the very top.
+  Pages that don't open on the dark hero (info, artists, artist pages) keep the
+  tint permanently — white nav text would be invisible on their white first
+  section. See §1.4.
+- **Header is shorter and much fainter**: padding `1.4rem`→`0.9rem`
+  (`--header-h` 92px→76px) and the scrolled tint `0.5`→`0.22` alpha, blur
+  7px→6px.
+- **Header and footer run full width.** Dropped the `max-width:
+  var(--site-max-width)` cap on `.header-inner` / `.footer-inner`, so both are
+  inset only by the same `--gutter` padding as the "WE ARE …" section and track
+  any screen size automatically.
+- **Releases moved into the left nav** beside Info/Artists; the right side is
+  now just the Instagram icon and the burger.
+- **Mobile menu fades in**: the overlay fades and its links follow in a short
+  0.25s stagger instead of appearing instantly (§1.4).
+- **Hero tagline no longer wraps**: `SD - HTX - VSA - CDMX` gets the same
+  nowrap + container-query sizing as the title (the `-` hyphens were break
+  opportunities the `&nbsp;`s didn't cover).
+- **Album-cover window is now one switch**: `--cover-clip` in `:root` — set it
+  to `none` to turn the 45° crop off site-wide (§1.13).
+
+### 2026-07-18 — hero title scales instead of wrapping
 
 - `ALKABIL.AUDIO` no longer wraps letter-by-letter on smaller desktop widths:
   `.hero-title h2` is now `white-space: nowrap` and sized with container-query
