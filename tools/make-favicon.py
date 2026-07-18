@@ -1,29 +1,32 @@
 #!/usr/bin/env python3
-"""Generate assets/favicon.png from the label mark (assets/logo-white.png).
+"""Generate assets/favicon.png (the PNG fallback) from the red label mark.
 
-The source logo is a white mark on transparency; browser tabs are shown on
-both light and dark chrome, so we composite it onto a solid black square so it
-is always visible. Run from the repo root:
+The primary favicon is the vector assets/favicon.svg (the "Logo Red" mark);
+this script rasterizes a 256x256 PNG fallback for browsers that don't use SVG
+icons. The mark keeps its transparent background — it's the red glyph only, so
+it reads on both light and dark browser tabs. Source is assets/logo-red.png.
+Run from the repo root:
 
     python tools/make-favicon.py
 
-Outputs a 256x256 PNG. Referenced in every page's <head> as
+Referenced in every page's <head> after the SVG:
 <link rel="icon" type="image/png" href="assets/favicon.png">.
 """
 from PIL import Image
 
 SIZE = 256          # favicon square, px
-PAD = 26            # transparent padding inside the square, px
-BG = (0, 0, 0, 255) # black background
+MARGIN = 1.08       # square side = longest glyph edge * MARGIN (breathing room)
 
-src = Image.open("assets/logo-white.png").convert("RGBA")
+src = Image.open("assets/logo-red.png").convert("RGBA")
 
-# scale the mark to fit the padded box, preserving aspect
-box = SIZE - 2 * PAD
-scale = min(box / src.width, box / src.height)
-mark = src.resize((round(src.width * scale), round(src.height * scale)), Image.LANCZOS)
+# trim to the glyph's non-transparent bounding box
+bbox = src.getbbox()
+if bbox:
+    src = src.crop(bbox)
 
-out = Image.new("RGBA", (SIZE, SIZE), BG)
-out.alpha_composite(mark, ((SIZE - mark.width) // 2, (SIZE - mark.height) // 2))
-out.save("assets/favicon.png")
-print("wrote assets/favicon.png", out.size)
+# centre it in a transparent square, then downscale
+side = int(max(src.width, src.height) * MARGIN)
+square = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+square.alpha_composite(src, ((side - src.width) // 2, (side - src.height) // 2))
+square.resize((SIZE, SIZE), Image.LANCZOS).save("assets/favicon.png", optimize=True)
+print("wrote assets/favicon.png", (SIZE, SIZE))
