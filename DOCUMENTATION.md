@@ -10,7 +10,7 @@ Contents:
    - [1.1 Add a new artist page (the full walkthrough)](#11-add-a-new-artist-page-the-full-walkthrough)
      - [1.1.1 How the pieces connect](#111-how-the-pieces-connect)
      - [1.1.2 The two steps to add an artist](#112-the-two-steps-to-add-an-artist)
-     - [1.1.3 Setting (or changing) the artist's release](#113-setting-or-changing-the-artists-release)
+     - [1.1.3 Setting, changing, and adding releases](#113-setting-changing-and-adding-releases)
      - [1.1.4 Artist images — where they go and how big](#114-artist-images--where-they-go-and-how-big)
    - [1.2 Change the newest release (home page)](#12-change-the-newest-release-home-page)
    - [1.3 Edit the FAQ (Info page)](#13-edit-the-faq-info-page)
@@ -125,7 +125,7 @@ change, top to bottom:
 That's it. You never edit the other artists' pages, and the grid on
 `artists.html` picks the new artist up automatically.
 
-#### 1.1.3 Setting (or changing) the artist's release
+#### 1.1.3 Setting, changing, and adding releases
 
 The release block sits at the bottom of the artist page, before the Prev/Next
 nav. It has four editable parts:
@@ -171,6 +171,28 @@ To **change the release**, edit in place:
 The `--gd` values position each block on the desktop grid (row/col numbers, see
 §2 and §1.11); leave them unless you want to move things. On mobile the blocks
 just stack in source order.
+
+**Adding another release (an artist with several).** An artist can list any
+number of releases — each release is one whole `<section>` (the block shown
+above), and they simply stack down the page. To add one:
+
+1. **Copy the entire release `<section>…</section>`** and paste it directly
+   above or below the existing release section.
+2. **Order = document order.** The release whose `<section>` comes **first** in
+   the HTML shows **higher** on the page; a later `<section>` shows below it. So
+   to feature a new release above the current one, paste it *before* that
+   section; to list it underneath, paste it *after*. On mobile they stack
+   top-to-bottom in exactly this order.
+3. **Keep the Prev/Next nav last.** `<nav class="item-pagination" …>` must stay
+   the final thing in `<main>`, after **all** release sections.
+4. **Fill in the four parts** of the new section exactly as above — cover,
+   title, blurb, button — so every release has the identical format. Each
+   section carries its own `clip-diamond` (or not) and its own `--gd`
+   placements; leave the `--gd` values the same on each release and they'll all
+   lay out identically.
+
+There's no limit — three or four release sections stack the same way. (In-page
+reminder: there's a comment on the release section in each artist's HTML.)
 
 #### 1.1.4 Artist images — where they go and how big
 
@@ -695,6 +717,13 @@ served-at-root requirement, so do it only once the site lives at
 ---
 
 ## 6. Changelog
+
+### 2026-07-17 — multiple-releases guide
+
+- Documented adding more than one release per artist (§1.1.3): each release is a
+  standalone `<section>`, order = document order (above/below), identical
+  four-part format. Added an in-page comment on the release section in the artist
+  HTML. No code change — the layout already supports stacked release sections.
 
 ### 2026-07-17 — desktop header matches the red menu overlay
 
