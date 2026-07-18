@@ -56,7 +56,13 @@
   --site-max-width: 1500px;
   --gutter: 4vw;
   --gap: 11px;
-  --header-h: 92px;
+  --header-h: 76px;   /* keep in sync with .site-header's padding + brand size */
+
+  /* ALBUM-COVER WINDOW (artist pages) — the 45°-tilted square the release cover
+     is shown through. ***Set to `none` to switch the effect off site-wide.***
+     Any clip-path value works: polygon(), circle(50%), ellipse(), etc.
+     See DOCUMENTATION §1.13. */
+  --cover-clip: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -101,31 +107,42 @@ img { max-width: 100%; display: block; }
 
 /* ---------------- Header ----------------
    Fixed to the top and above everything (z-index) so it persists on scroll with
-   all content passing underneath. It's a translucent frosted bar — the same
-   dark-red overlay as the mobile menu (rgba(var(--hero-red)) + blur) — carrying
-   white nav/brand text. The tinted backdrop gives consistent contrast over every
-   section (dark hero, white pages, gray accent) without per-page colors. Markup
-   is injected by js/site.js into the empty <header class="site-header"> shell. */
+   all content passing underneath. It starts fully TRANSPARENT over the dark hero
+   and the faint red bar fades in once the page is scrolled (js/site.js adds
+   .scrolled past a threshold, and removes it back at the very top). Pages that
+   don't open on the dark hero get .scrolled permanently — otherwise the white
+   nav text would sit invisible on their white first section. Markup is injected
+   by js/site.js into the empty <header class="site-header"> shell. */
 
 .site-header {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 1000;
   color: var(--white);
-  /* DESKTOP HEADER BAR look — tweak here (mobile menu is separate, in .mobile-menu):
-     opacity below (0 = clear … 1 = solid) and the two blur() px values (higher = frostier). */
-  background: rgba(var(--hero-red), 0.5);
-  -webkit-backdrop-filter: blur(7px);
-          backdrop-filter: blur(7px);
-  padding: 1.4rem var(--gutter);
+  padding: 0.9rem var(--gutter);   /* bar height — keep --header-h in sync */
+  background: rgba(var(--hero-red), 0);   /* clear until scrolled */
+  -webkit-backdrop-filter: blur(0px);
+          backdrop-filter: blur(0px);
+  transition: background 0.4s ease, backdrop-filter 0.4s ease,
+              -webkit-backdrop-filter 0.4s ease;
 }
+/* DESKTOP HEADER BAR look once scrolled — tweak here (the mobile menu overlay is
+   separate, in .mobile-menu): the opacity below (0 = clear … 1 = solid) and the
+   two blur() px values (higher = frostier). */
+.site-header.scrolled {
+  background: rgba(var(--hero-red), 0.22);
+  -webkit-backdrop-filter: blur(6px);
+          backdrop-filter: blur(6px);
+}
+@media (prefers-reduced-motion: reduce) { .site-header { transition: none; } }
 
+/* Full-bleed: the bar's contents run the whole page width, inset only by the
+   same --gutter padding as the "WE ARE …" section (no max-width cap), so it
+   tracks any screen size automatically. */
 .site-header .header-inner {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  max-width: var(--site-max-width);
-  margin: 0 auto;
 }
 .site-header nav.nav-left  { justify-self: start; }
 .site-header .branding     { justify-self: center; }
@@ -204,9 +221,34 @@ body.menu-open .burger span:nth-child(3) { transform: translateY(-8px) rotate(-4
 body.menu-open .mobile-menu { display: flex; }
 body.menu-open { overflow: hidden; }
 
+/* Menu opening: the overlay fades in and the links follow in a short stagger
+   (~0.25s each, 0.05s apart) instead of appearing instantly. Add more nth-child
+   lines if the menu ever grows past six links. */
+body.menu-open .mobile-menu { animation: menu-fade 0.25s ease both; }
+body.menu-open .mobile-menu a { animation: menu-item-in 0.25s ease both; }
+body.menu-open .mobile-menu a:nth-child(1) { animation-delay: 0.06s; }
+body.menu-open .mobile-menu a:nth-child(2) { animation-delay: 0.11s; }
+body.menu-open .mobile-menu a:nth-child(3) { animation-delay: 0.16s; }
+body.menu-open .mobile-menu a:nth-child(4) { animation-delay: 0.21s; }
+body.menu-open .mobile-menu a:nth-child(5) { animation-delay: 0.26s; }
+body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
+@keyframes menu-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes menu-item-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.menu-open .mobile-menu,
+  body.menu-open .mobile-menu a { animation: none; }
+}
+
+/* Narrow screens: the inline nav (Info/Artists/Releases) and the Instagram icon
+   give way to the burger + full-screen menu. */
 @media (max-width: 880px) {
   .site-header nav.nav-left,
-  .site-header .header-right nav,
   .site-header .header-right .social-icon { display: none; }
   .site-header .header-inner { grid-template-columns: auto 1fr auto; }
   .site-header .branding { justify-self: start; }
@@ -358,11 +400,19 @@ body.menu-open { overflow: hidden; }
   font-size: clamp(1.5rem, 7vw, var(--h2-size));
   font-size: min(var(--h2-size), 11cqi);
 }
+/* Same treatment as the title: one line that scales to its column. The "-"
+   hyphens are line-break opportunities (the &nbsp;s only protect the spaces),
+   so without nowrap this breaks onto two lines on narrower screens. */
 .hero-tagline {
   font-family: var(--heading-font);
   text-transform: uppercase;
-  font-size: 1.1rem;
   text-align: right;
+  container-type: inline-size;    /* so the line sizes to THIS column's width */
+}
+.hero-tagline p {
+  white-space: nowrap;
+  font-size: 1.1rem;              /* fallback without container-query units */
+  font-size: min(1.1rem, 8cqi);
 }
 @media (max-width: 767px) {
   .hero-logo img { max-width: 140px; }
@@ -435,8 +485,8 @@ body.menu-open { overflow: hidden; }
    x%/y% pairs (here the edge midpoints = a diamond); change them for a
    different shape. Removing the class restores the full square. */
 .release-cover.clip-diamond img {
-  -webkit-clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-          clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  -webkit-clip-path: var(--cover-clip);
+          clip-path: var(--cover-clip);
 }
 
 /* ---------------- Artists index (portfolio grid overlay) ---------------- */
@@ -536,6 +586,19 @@ body.menu-open { overflow: hidden; }
 
 .big-q { font-size: calc(var(--h1-size) * 1.4); line-height: 1; }
 
+/* The two info-page photos render at IDENTICAL size. Two halves to that:
+   (1) their blocks use the same grid-area width in info.html (`--gd` cols
+   14/27 — which also bleeds into the right gutter), and (2) this shared 3:2
+   box. The source files differ slightly (3:2 vs ~1.57:1), so object-fit crops
+   the difference instead of letting one come out taller. Stays fully fluid:
+   the width follows the grid cell, the height follows from aspect-ratio — on
+   mobile both go full-width and still match. */
+.info-img img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
 .faq details {
   border-top: 1px solid currentColor;
   padding: 1rem 0;
@@ -553,14 +616,44 @@ body.menu-open { overflow: hidden; }
   gap: 1rem;
 }
 .faq summary::-webkit-details-marker { display: none; }
+.faq summary { transition: opacity 0.2s ease; }
+.faq summary:hover { opacity: 0.6; }
 .faq summary::after {
   content: "+";
   font-family: var(--body-font);
   font-size: 1.4rem;
-  transition: transform 0.25s;
+  /* the + rolls a half-turn into an × as it opens, matching the reveal timing */
+  transition: transform 0.34s cubic-bezier(0.25, 0.6, 0.3, 1);
 }
-.faq details[open] summary::after { transform: rotate(45deg); }
-.faq .faq-answer { padding: 0.8em 0 0.4em; }
+.faq details[open] summary::after { transform: rotate(225deg); }
+
+/* Answer reveal. <details> renders its content only when open, so a CSS
+   *transition* can't catch it — an animation plays as soon as it appears.
+   Animating grid-template-rows 0fr → 1fr gives a true height slide (no
+   magic-number max-height), so the answer cascades the list open beneath its
+   question instead of popping in at full height. The inner element clips
+   itself while the row is short. */
+.faq .faq-answer {
+  display: grid;
+  grid-template-rows: 1fr;
+  padding: 0;
+}
+.faq .faq-answer > * {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.8em 0 0.4em;   /* on the inner box so it's clipped away too */
+}
+.faq details[open] .faq-answer {
+  animation: faq-reveal 0.34s cubic-bezier(0.25, 0.6, 0.3, 1);
+}
+@keyframes faq-reveal {
+  from { grid-template-rows: 0fr; opacity: 0; }
+  to   { grid-template-rows: 1fr; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq details[open] .faq-answer { animation: none; }
+  .faq summary::after { transition: none; }
+}
 
 /* newsletter */
 .newsletter { text-align: center; }
@@ -603,9 +696,9 @@ body.menu-open { overflow: hidden; }
   color: var(--white);
   padding: 3rem var(--gutter) 3.5rem;
 }
+/* Full-bleed like the header: contents run the whole page width, inset only by
+   the --gutter padding on .site-footer (no max-width cap). */
 .site-footer .footer-inner {
-  max-width: var(--site-max-width);
-  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--gap);
