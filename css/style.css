@@ -335,7 +335,8 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 
 /* section heights (approximate Squarespace small/medium/large) */
 .section-height--large  { min-height: 100vh; display: grid; align-content: end; }
-.section-height--large .fgrid { align-self: end; }
+.section-height--large .fgrid,
+.section-height--large .hero-inner { align-self: end; }
 .section-height--medium .fgrid { padding: 4rem 0; }
 .section-height--small  .fgrid { padding: 2rem 0; }
 
@@ -420,6 +421,22 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   background: rgba(0, 0, 0, 0.12);
 }
 
+/* Hero band — logo on the left, wordmark + tagline on the right. No grid
+   coordinates: it's a two-track grid (logo takes its own width, the copy takes
+   the rest). The copy column must have a definite width because .hero-title and
+   .hero-tagline use container-query units to size their text — as shrink-to-fit
+   flex items they'd collapse. */
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--gap);
+  padding: 2.5rem var(--gutter);
+}
+.hero-tagline { margin-top: 0.4rem; }
+
 .hero-logo img {
   width: 100%;
   max-width: 190px;      /* keep the mark modest — it was filling the cell */
@@ -459,7 +476,9 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
      center it, then nudge it down ~a third of the way toward the bottom so it
      doesn't sit dead-centre */
   .section-height--large { align-content: center; }
-  .section-height--large .fgrid { align-self: center; transform: translateY(15vh); }
+  .section-height--large .fgrid,
+  .section-height--large .hero-inner { align-self: center; transform: translateY(15vh); }
+  .hero-inner { grid-template-columns: 1fr; gap: 1.2rem; }
 }
 
 /* Film-grain / static overlay. Drop a <div class="grain"> in a section (after
@@ -520,11 +539,27 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
    soft drop shadow and grow slightly on hover. Tune --cover-hover-scale (top of
    this file) and the two box-shadows below. The hover lives on the wrapper, not
    the <a>, so it works for covers that aren't links (e.g. "coming soon"). */
-/* align-self: start makes the block hug the image instead of stretching to fill
-   its (much taller) grid area. Without it the div keeps a tall invisible tail
-   below the cover, and hovering that empty space triggers the grow. It also
-   means the box you hover is exactly the artwork you see. */
-.release-cover { align-self: start; }
+/* NB: deliberately no `align-self` here. The cover hugging its image (so the
+   hover area matches the artwork) is handled by `align-items: start` on
+   .artist-release. Putting it on .release-cover itself would also land inside
+   .newest-inner — a flex COLUMN, where align-self is the HORIZONTAL axis — and
+   jam the home page's cover against the left edge instead of centring it. */
+/* Home newest-release stack — marquee, cover, marquee. No grid coordinates:
+   it's a centred column, and the cover just has a max width. */
+.newest-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2rem;
+  padding: 3rem 0;
+}
+.newest-inner .marquee { width: 100%; }        /* marquees stay full-bleed */
+.newest-inner .release-cover {                  /* cover size lives here now */
+  width: min(calc(100% - var(--gutter) * 2), 560px);
+}
+
 .release-cover a { display: block; }
 .release-cover img {
   width: 100%; height: auto;
@@ -568,9 +603,11 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
     column-gap: var(--gap);
     align-items: start;
   }
-  /* the only positioning left: which columns each side occupies */
-  .release-text  { grid-column: 2 / 13; grid-row: 1; }
-  .release-cover { grid-column: 15 / 26; grid-row: 1; }
+  /* the only positioning left: which columns each side occupies. MUST stay
+     scoped to .artist-release — `.release-cover` alone would also capture the
+     home page's newest-release cover, which is a .blk placed by --gd. */
+  .artist-release > .release-text  { grid-column: 2 / 13; grid-row: 1; }
+  .artist-release > .release-cover { grid-column: 15 / 26; grid-row: 1; }
 }
 
 /* Release cover shown through a tilted-square "window" — a 45°-rotated square,
@@ -627,6 +664,14 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 /* Artist name — deliberately about half the normal h1 size. Fluid so it also
    fits small screens (change the clamp's max to resize). The bio's WIDTH is set
    by the block's grid area (`--gd`) in each artist page — see DOCUMENTATION. */
+/* Artist bio — a centred measure, no grid coordinates. Widen/narrow the whole
+   bio (name, copy and links) with the one max-width below. */
+.artist-intro { padding-bottom: 3rem; }
+.artist-bio {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 3rem var(--gutter) 0;
+}
 .artist-bio h1 { font-size: clamp(1.8rem, 6vw, 2.5rem); }
 .artist-bio p { margin-top: 1em; }
 .artist-bio .artist-links { margin-top: 1.4em; }
@@ -836,8 +881,20 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   .faq summary::after { transition: none; }
 }
 
-/* newsletter */
-.newsletter { text-align: center; }
+/* newsletter — marquee then the form, stacked. No grid coordinates. */
+.newsletter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding: 2rem 0 5rem;
+}
+.newsletter-section .marquee { width: 100%; }   /* marquee stays full-bleed */
+.newsletter {
+  text-align: center;
+  max-width: 760px;                             /* the form's measure */
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
 .newsletter .nl-desc { margin-bottom: 1.6em; }
 .newsletter form {
   display: flex;
@@ -852,7 +909,11 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   border: 1px solid var(--black);
   background: transparent;
   color: inherit;
-  min-width: 18rem;
+  /* 18rem (378px) is wider than a phone, so cap it at the available width —
+     without this the field overflowed and was only hidden by the section's
+     overflow: hidden */
+  min-width: min(18rem, 100%);
+  max-width: 100%;
 }
 .newsletter button {
   font-family: var(--heading-font);
