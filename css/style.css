@@ -351,6 +351,7 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   color: var(--white);
   padding: 1rem 1.9rem;
   transition: opacity 0.2s;
+  white-space: nowrap;   /* label stays on ONE line at any width — never "LISTEN/ ⏎ BUY" */
 }
 .btn:hover { opacity: 0.75; }
 .theme-black .btn { background: var(--accent); color: var(--black); }
@@ -516,6 +517,11 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
    soft drop shadow and grow slightly on hover. Tune --cover-hover-scale (top of
    this file) and the two box-shadows below. The hover lives on the wrapper, not
    the <a>, so it works for covers that aren't links (e.g. "coming soon"). */
+/* align-self: start makes the block hug the image instead of stretching to fill
+   its (much taller) grid area. Without it the div keeps a tall invisible tail
+   below the cover, and hovering that empty space triggers the grow. It also
+   means the box you hover is exactly the artwork you see. */
+.release-cover { align-self: start; }
 .release-cover a { display: block; }
 .release-cover img {
   width: 100%; height: auto;
@@ -600,7 +606,10 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   object-fit: cover;
 }
 
-.release-title { text-transform: lowercase; }
+/* Tighter than the global h2 leading (1.4em): a large display title reads better
+   set close, and the smaller half-leading means the cover — which aligns to the
+   top of the title's BOX — lines up with the top of the letterforms too. */
+.release-title { text-transform: lowercase; line-height: 1.12em; }
 .release-desc p { margin-top: 1em; }
 .release-desc em { font-style: italic; }
 
