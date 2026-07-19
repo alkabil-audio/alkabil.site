@@ -7,36 +7,31 @@
    newsletter submit.
    ============================================================ */
 
-/* Artist pages live one level down in /artists/<slug>.html; every other page
-   is at the root. Internal links and image paths get this prefix so the same
-   script works from both depths. */
-const BASE = /[/\\]artists[/\\][^/\\]+$/.test(location.pathname) ? '../' : '';
-
-/* Prefix an internal path; leave full URLs, mailto, and anchors untouched. */
-const url = (p) => /^(https?:|mailto:|#)/.test(p) ? p : BASE + p;
-
 /* ============ ARTIST REGISTRY — EDIT ONCE ============
    The single source of truth for artists. Order here is the order used by the
-   Previous/Next navigation (it wraps around) and by the grid on artists.html.
+   Previous/Next navigation (it wraps around) and by the grid on /artists.
    To add an artist: (1) add a line here, (2) create artists/<id>.html by
    copying an existing artist page and setting <body data-artist="<id>">.
    Nothing else needs editing — the grid and every page's prev/next update
-   themselves. `id` must match the filename (artists/<id>.html) and the page's
-   data-artist. */
+   themselves. `id` must match the filename (artists/<id>.html, served at
+   /artists/<id>) and the page's data-artist. */
 const ARTISTS = [
-  { id: 'yslas',       name: 'Yslas',          img: 'assets/yslas.jpg' },
+  { id: 'yslas',       name: 'Yslas',          img: '/assets/yslas.jpg' },
   // `focus` (optional): CSS object-position for the grid photo when it's a tall
   // portrait cropped to fill — anchors the crop so the face shows. Default is
   // center; 'center 12%' pulls it near the top. See DOCUMENTATION §1.1.4.
-  { id: 'jehernandez', name: 'J.E. Hernández', img: 'assets/hernandez.jpg', focus: 'center 12%' },
+  { id: 'jehernandez', name: 'J.E. Hernández', img: '/assets/hernandez.jpg', focus: 'center 12%' },
 ];
 
 /* ============ NAV + FOOTER — EDIT ONCE ============
    [label, destination]. A destination starting with http opens in a new tab;
-   anything else is an internal page (prefixed for depth by url()). */
+   anything else is an internal page. Internal links are CLEAN, root-absolute
+   slugs ('/info', not 'info.html') — the host serves info.html at /info. They
+   must start with "/" so they resolve the same from /artists/<slug> as from the
+   root. See DOCUMENTATION §4. */
 const NAV_LINKS = [
-  ['Info', 'info.html'],
-  ['Artists', 'artists.html'],
+  ['Info', '/info'],
+  ['Artists', '/artists'],
 ];
 const RELEASES = ['Releases', 'https://alkabilaudio.bandcamp.com/'];
 
@@ -56,7 +51,7 @@ const FOOTER_RIGHT = [
 function linkHTML(label, dest) {
   return dest.startsWith('http')
     ? '<a href="' + dest + '" target="_blank" rel="noopener">' + label + '</a>'
-    : '<a href="' + url(dest) + '">' + label + '</a>';
+    : '<a href="' + dest + '">' + label + '</a>';
 }
 
 /* ============ HEADER SCROLL STATE ============
@@ -93,7 +88,7 @@ function buildHeader(header) {
         NAV_LINKS.map(([l, d]) => linkHTML(l, d)).join('') +
         linkHTML(RELEASES[0], RELEASES[1]) +
       '</nav>' +
-      '<div class="branding"><a href="' + url('index.html') + '">ALKABIL</a></div>' +
+      '<div class="branding"><a href="/">ALKABIL</a></div>' +
       '<div class="header-right">' +
         '<a class="social-icon" href="' + INSTAGRAM_URL + '" target="_blank" rel="noopener" aria-label="Instagram">' + IG_SVG + '</a>' +
         '<button class="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>' +
@@ -154,7 +149,7 @@ function buildArtistNav(nav) {
   const prev = i > 0 ? ARTISTS[i - 1] : null;
   const next = i < n - 1 ? ARTISTS[i + 1] : null;
   const item = (a, cls, label) => a
-    ? '<a class="' + cls + '" href="' + url('artists/' + a.id + '.html') + '">' +
+    ? '<a class="' + cls + '" href="/artists/' + a.id + '">' +
         '<span class="pag-label">' + label + '</span>' +
         '<span class="pag-title">' + a.name + '</span>' +
       '</a>'
@@ -164,12 +159,12 @@ function buildArtistNav(nav) {
 }
 
 /* ============ ARTISTS GRID ============
-   Builds the portfolio grid on artists.html from the registry, so a new artist
+   Builds the portfolio grid on /artists from the registry, so a new artist
    shows up automatically. */
 function buildArtistGrid(grid) {
   grid.innerHTML = ARTISTS.map(a =>
-    '<a class="grid-item" href="' + url('artists/' + a.id + '.html') + '">' +
-      '<img src="' + url(a.img) + '" alt="' + a.name + '"' +
+    '<a class="grid-item" href="/artists/' + a.id + '">' +
+      '<img src="' + a.img + '" alt="' + a.name + '"' +
         (a.focus ? ' style="object-position:' + a.focus + '"' : '') + '>' +
       '<div class="overlay"></div>' +
       '<h3 class="portfolio-title">' + a.name + '</h3>' +
@@ -227,7 +222,7 @@ function buildHeroParallax() {
   const host = document.querySelector('.hero-parallax');
   if (!host) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const imgUrl = url(host.dataset.img || '');
+  const imgUrl = host.dataset.img || '';
   let rings = [];
 
   function build() {
@@ -300,7 +295,7 @@ function wireNewsletter() {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const data = new URLSearchParams(new FormData(form));
-    fetch(url('index.html'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: data })
+    fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: data })
       .catch(() => { /* no form backend — ignore */ })
       .finally(() => box.classList.add('submitted'));
   });
