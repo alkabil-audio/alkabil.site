@@ -978,6 +978,14 @@ host it under a subpath, the fix is to make the paths relative again and put the
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
 
+### 2026-07-18 — header bar no longer force-capitalises
+
+- Dropped `text-transform: uppercase` from the header's nav links and brand, so
+  they render exactly as typed in `NAV_LINKS` / the brand string in
+  `js/site.js` — casing is now controlled there. (The brand still reads
+  "ALKABIL" because that's how it's written.) The mobile menu overlay
+  (`.mobile-menu a`) still uppercases; change it there if you want it to match.
+
 ### 2026-07-18 — AI statement in the FAQ
 
 - Added a **"WHAT ABOUT AI?"** entry to the Info page FAQ — a short, plain-voice
