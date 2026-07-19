@@ -27,6 +27,7 @@ Contents:
    - [1.13 Release-cover "window" shape (the tilted square)](#113-release-cover-window-shape-the-tilted-square)
    - [1.13a Release-cover shadow and hover grow](#113a-release-cover-shadow-and-hover-grow)
    - [1.13b Rounded section corners](#113b-rounded-section-corners)
+   - [1.13c Artist-page release layout — alignment, hover area, the button](#113c-artist-page-release-layout--alignment-hover-area-the-button)
    - [1.14 Writing HTML here — a mini style guide](#114-writing-html-here--a-mini-style-guide)
    - [1.15 The hero concentric-ring parallax](#115-the-hero-concentric-ring-parallax)
    - [1.16 The film-grain / static overlay](#116-the-film-grain--static-overlay)
@@ -137,9 +138,9 @@ nav. It has four editable parts:
 ```html
 <section class="page-section theme-white section-height--medium">
   <div class="fgrid">
-    <!-- the cover art -->
-    <div class="blk release-cover clip-diamond" style="--gd: 3/15/22/26;">
-      <img src="../assets/newartist-cover.jpg" alt="Release title cover">
+    <!-- the cover art — row-start (5) matches the title's, §1.13c -->
+    <div class="blk release-cover clip-diamond" style="--gd: 5/15/24/26;">
+      <img src="/assets/newartist-cover.jpg" alt="Release title cover">
     </div>
     <!-- the title -->
     <div class="blk" style="--gd: 5/2/10/13;">
@@ -149,8 +150,8 @@ nav. It has four editable parts:
     <div class="blk release-desc" style="--gd: 10/2/16/13;">
       <p>A sentence or two about the release…</p>
     </div>
-    <!-- the button -->
-    <div class="blk" style="--gd: 16/2/18/6;">
+    <!-- the button — 6 columns wide so the label can't wrap, §1.13c -->
+    <div class="blk" style="--gd: 16/2/18/8;">
       <a class="btn" href="https://tr.ee/…" target="_blank" rel="noopener">LISTEN/BUY</a>
     </div>
   </div>
@@ -159,10 +160,11 @@ nav. It has four editable parts:
 
 To **change the release**, edit in place:
 
-1. **Cover art** — replace the `<img src>` (drop the file in `assets/`, path
-   starts with `../`). Covers are square; the `clip-diamond` class shows it
-   through a tilted-square window (§1.13 — remove that class for a plain
-   square).
+1. **Cover art** — replace the `<img src>` (drop the file in `assets/`; the path
+   is root-absolute, `/assets/…`). Covers are square; the `clip-diamond` class
+   shows it through a tilted-square window (§1.13 — currently switched off).
+   **If you move the title's row-start, move the cover's to match** — that's what
+   keeps the artwork level with the title (§1.13c).
 2. **Title** — the `<h2 class="release-title">`. It's forced to lowercase by CSS
    (`text-transform`); type it however you like.
 3. **Blurb** — the `<p>` inside `release-desc`. Add more `<p>`s for more
@@ -599,6 +601,113 @@ width of the page. It's one class in the markup:
 - **To round another section**, just add `rounded-section` to it. To square this
   one off again, remove the class.
 
+### 1.13c Artist-page release layout — alignment, hover area, the button
+
+The release block on an artist page is a two-column layout built on the 24-column
+`.fgrid`: **text on the left**, **cover on the right**. Nothing about that layout
+is automatic — each block is placed by hand with its own `--gd`
+(`row-start / col-start / row-end / col-end`), so the three rules below are what
+keep it looking right. Get one wrong and the symptoms are exactly the ones that
+have bitten this page before.
+
+#### The anatomy
+
+```html
+<section class="page-section theme-white section-height--medium">
+  <div class="fgrid">
+    <div class="blk release-cover" style="--gd: 5/15/24/26;">   <!-- cover, right -->
+      <img src="/assets/cover.jpg" alt="…">
+    </div>
+    <div class="blk" style="--gd: 5/2/10/13;">                  <!-- title, left -->
+      <h2 class="release-title">the title</h2>
+    </div>
+    <div class="blk release-desc" style="--gd: 10/2/16/13;">    <!-- blurb -->
+      <p>…</p>
+    </div>
+    <div class="blk" style="--gd: 16/2/18/8;">                  <!-- button -->
+      <a class="btn" href="…">LISTEN/BUY</a>
+    </div>
+  </div>
+</section>
+```
+
+Columns: the text column runs **2 → 13**, the cover **15 → 26** (column 14 is the
+gap between them). Those rarely need changing.
+
+#### Rule 1 — the cover's row-start must equal the title's row-start
+
+**This is the one that matters.** Above, both are `5`. Because the two blocks are
+placed independently, any difference is a permanent vertical offset:
+
+```
+--gd: 3/15/24/26   ← cover starts row 3
+--gd: 5/2/10/13    ← title starts row 5     → cover floats ~2 rows above the text
+```
+
+Grid rows are a **fixed height** (`--row-h`, derived from the viewport width),
+*not* a share of the content — so the offset doesn't shrink when text is short;
+it's the same gap on every page. It simply *reads* worse next to a tall text
+column, which is why a long description makes it obvious while a one-line blurb
+hides it.
+
+So: **when you change a title's row-start, change the cover's to match.** If you
+restack the left column (e.g. a longer blurb pushes the button down), only the
+row-*ends* below it need adjusting — the shared row-start stays put.
+
+Note the cover aligns to the top of the title's *box*. `.release-title` uses a
+tight `line-height: 1.12em` so that box hugs the letterforms; if you loosen the
+leading, the artwork will start to look high again.
+
+#### Rule 2 — the cover block hugs its image (`align-self: start`)
+
+A `.blk` normally **stretches** to fill its whole grid area. The cover's area is
+tall (rows 5→24) but the image is only as tall as its aspect ratio, so the block
+would keep a tall invisible tail underneath — and since the hover lives on the
+block, **hovering that empty space below the artwork triggered the grow**.
+
+`.release-cover { align-self: start; }` in `css/style.css` fixes it: the block
+shrinks to the image, so the hover target is exactly the artwork you can see.
+Don't override `align-self` on a cover, and keep the hover on `.release-cover`
+rather than the `<a>` — covers without a link (a "coming soon" release) still
+need to respond.
+
+The cover's **row-end** no longer controls its height (the image does), but it
+still counts toward the section's total height — keep it roughly where the
+artwork ends so the section doesn't collapse or leave a big gap.
+
+#### Rule 3 — the button never wraps
+
+`.btn` is `white-space: nowrap`, so a label like `LISTEN/BUY` always stays on one
+line instead of breaking into `LISTEN/` + `BUY`. Because the button is
+`inline-block` it sizes to its text, so give its block enough columns or it will
+spill past its area:
+
+- `--gd: 16/2/18/8` (6 columns) fits `LISTEN/BUY` comfortably.
+- 4 columns is too narrow — that's what caused the wrap originally.
+- A longer label (`PRE-ORDER NOW`) needs a wider end column still.
+
+Spilling isn't fatal — the space to the right is empty — but widening the area is
+tidier.
+
+#### On mobile
+
+Below 768px every `--gd` is ignored and blocks stack full-width **in document
+order**. Since the cover is authored first, mobile shows: cover → title → blurb →
+button. If you'd rather the artwork sat below the text on phones, move the
+`.release-cover` div after the other three in the HTML — desktop is unaffected,
+because there the grid areas place everything regardless of source order.
+
+#### Checklist when adding or editing a release
+
+1. Cover row-start **==** title row-start.
+2. Left-column blocks stack without overlapping (each row-end ≤ the next
+   row-start).
+3. Cover row-end roughly where the artwork ends.
+4. Button block wide enough for its label.
+5. Swap `<img src>`, title, blurb, and the `.btn` href.
+
+(Adding a *second* release = copying the whole `<section>`: §1.1.3.)
+
 ### 1.14 Writing HTML here — a mini style guide
 
 The site is plain HTML/CSS; a few conventions keep it consistent:
@@ -977,6 +1086,28 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — release layout: cover alignment, hover area, button wrap
+
+- **Covers now align to the top of their title.** The cover blocks started at
+  grid row 3 while the titles started at row 5 — a fixed ~2-row offset (rows are
+  a set height, not a share of the content), which read fine beside a one-line
+  blurb but obviously wrong beside a long one. Both artist pages now place the
+  cover at row-start 5, matching the title.
+- `.release-title` leading tightened (`line-height: 1.12em`, was the global h2's
+  1.4em) so the title's box hugs its letterforms — otherwise the half-leading
+  left the artwork still looking high, and a big display title set loosely.
+- **Hover grow no longer fires below the artwork.** `.blk` stretches to fill its
+  grid area, so the cover block kept a tall invisible tail under the image and
+  hovering that dead space triggered the effect. `.release-cover` is now
+  `align-self: start`, so the block hugs the image and the hover target is
+  exactly the visible cover.
+- **`LISTEN/BUY` can't wrap.** Added `white-space: nowrap` to `.btn` and widened
+  the button's grid area from 4 to 6 columns so the label fits its cell.
+- New **§1.13c** documents the whole release layout: the anatomy, the three rules
+  (matching row-start, `align-self: start`, button width), mobile stacking order,
+  and an editing checklist. §1.1.3's example updated to match (it still showed
+  row 3, the 4-column button, and a stale `../assets/` path).
 
 ### 2026-07-18 — header bar no longer force-capitalises
 
