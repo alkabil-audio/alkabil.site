@@ -74,23 +74,21 @@
 
     </section>
 
-    <!-- Newsletter -->
-    <section class="page-section theme-white section-height--medium">
-      <div class="fgrid">
-        <div class="blk marquee" style="--gd: 1/1/8/27; --speed: 30s;" aria-label="Subscribe">
-          <div class="track" aria-hidden="true">
-            <span>Subscribe</span><span>Subscribe</span><span>Subscribe</span>
-          </div>
+    <!-- Newsletter — marquee then the form, stacked. No coordinates. -->
+    <section class="page-section theme-white newsletter-section">
+      <div class="marquee" style="--speed: 30s;" aria-label="Subscribe">
+        <div class="track" aria-hidden="true">
+          <span>Subscribe</span><span>Subscribe</span><span>Subscribe</span>
         </div>
-        <div class="blk newsletter" style="--gd: 8/6/13/22;">
-          <p class="nl-desc">Sign up with your email address to receive news and updates.</p>
-          <form name="newsletter" method="POST" data-netlify="true">
-            <input type="hidden" name="form-name" value="newsletter">
-            <input type="email" name="email" placeholder="Email Address" required aria-label="Email Address">
-            <button type="submit">Sign Up</button>
-          </form>
-          <p class="nl-thanks">Thank you!</p>
-        </div>
+      </div>
+      <div class="newsletter">
+        <p class="nl-desc">Sign up with your email address to receive news and updates.</p>
+        <form name="newsletter" method="POST" data-netlify="true">
+          <input type="hidden" name="form-name" value="newsletter">
+          <input type="email" name="email" placeholder="Email Address" required aria-label="Email Address">
+          <button type="submit">Sign Up</button>
+        </form>
+        <p class="nl-thanks">Thank you!</p>
       </div>
     </section>
 
