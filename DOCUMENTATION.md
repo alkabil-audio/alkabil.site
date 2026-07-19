@@ -808,23 +808,38 @@ keyframes in `css/style.css`:
 ### 1.17 Info page: the text/photos split and the FAQ animation
 
 **The layout.** The whole info page above the newsletter is **one section**
-(`.info-split`) with two columns — all the text on the left, both photos stacked
-on the right:
+(`.info-split`) laid out as **two row-pairs** — each "section" of the page is a
+text block plus its own photo:
+
+```
+row 1  |  ? + intro copy       |  photo 1
+row 2  |  SOME ANSWERS + FAQ   |  photo 2
+```
 
 ```html
 <section class="page-section theme-white info-split" style="padding-top: var(--header-h);">
-  <div class="info-text">
+
+  <div class="info-text info-r1">          <!-- row 1 text -->
     <h1 class="big-q">?</h1>
     <p class="info-intro">…</p>
+  </div>
+  <div class="info-photo info-r1">         <!-- row 1 photo -->
+    <img src="/assets/info-1.jpeg" alt="">
+  </div>
+
+  <div class="info-text info-r2">          <!-- row 2 text -->
     <h2 class="info-answers">SOME ANSWERS</h2>
     <div class="faq">…</div>
   </div>
-  <div class="info-photos">
-    <img src="/assets/info-1.jpeg" alt="">
+  <div class="info-photo info-r2">         <!-- row 2 photo -->
     <img src="/assets/info-2.jpg" alt="">
   </div>
+
 </section>
 ```
+
+The `info-r1` / `info-r2` classes are what assign the grid rows — **keep them
+paired** (one `.info-text` + one `.info-photo` per row).
 
 It's deliberately *not* the `.fgrid` used elsewhere, because that grid's rows are
 a **fixed** height — which is what used to make this page misbehave. The intro
@@ -833,40 +848,58 @@ sum of one section's leftover rows plus the next one's padding: a gap that
 changed with the window and never closed. Here the row height is driven by the
 content instead.
 
-**How the three rules fall out of that:**
+**How the behaviour falls out of that:**
 
-1. **The photos always touch.** They're two children of one `.info-photos` grid
-   with `gap: 0`. There is no section boundary between them any more, so there's
-   nothing to introduce a gap.
-2. **The photos always match the text's height.** The section is a grid with
-   `align-items: stretch`, so the photo column stretches to the row height — and
-   that height comes from the text column. `.info-photos` has
-   `grid-template-rows: 1fr 1fr` (each photo takes half) and `min-height: 0`,
-   which is the important bit: without it the images' natural heights would push
-   the row taller instead of the text deciding it.
-3. **The photos crop rather than distort.** Each `img` is
-   `height: 100%; object-fit: cover`. Narrow the window and the column gets
-   taller and thinner, so they simply crop in further — a "fit to area" window.
-   It also re-matches live when a FAQ item opens and the text column grows.
+1. **Each photo matches its own section.** Every row's height is set by its text
+   block, and `align-items: stretch` makes that row's photo fill it exactly. So
+   the seam between the two photos lands precisely where section 1 ends — not at
+   an arbitrary halfway point.
+2. **Only the relevant photo grows.** Opening a FAQ item makes row 2 taller, so
+   photo 2 grows and **photo 1 doesn't move**. (Verified: photo 1 stays at its
+   height, photo 2 grows by the answer's height, seam stays flush.)
+3. **They still touch.** `row-gap: 0` on the grid, so adjacent rows share an
+   edge and the photos meet with no seam despite having different heights.
+4. **They fill their frames at any width.** Each `img` is
+   `height: 100%; object-fit: cover`, and `min-height: 0` on `.info-photo` is
+   what lets the *text* decide the row height rather than the image's natural
+   size. Narrow the window and each frame gets taller and thinner, so the photo
+   just crops in harder — never letterboxed, never distorted.
 
 **Column widths** use the same template as `.fgrid`, so the text lines up with
 the rest of the site: `.info-text` sits at `grid-column: 2 / 13` (the same
-columns "SOME ANSWERS" always used) and `.info-photos` at `14 / -1` — `-1` runs
+columns "SOME ANSWERS" always used) and `.info-photo` at `14 / -1` — `-1` runs
 through the right gutter so the photos bleed to the screen edge. Change those two
 values to re-proportion the split.
 
+**Moving the seam.** Row 1 is only the `?` and one paragraph, so on its own it
+would be much shorter than row 2. `.info-text.info-r1 { padding-bottom: 5rem }`
+pads it out to balance the two. **Raise that number to push the seam between the
+photos down, lower it to pull the seam up** — it's the single dial for how the
+two photos divide the column.
+
 **Text alignment.** Everything in `.info-text` shares one left edge; only the `?`
 is centred (`.info-text .big-q { text-align: center }`). The vertical rhythm is
-three margins in `css/style.css` — `.big-q` (top space under the header),
-`.info-intro`, and `.info-answers` (the big breath before "SOME ANSWERS", 6.5rem).
+the margins on `.big-q`, `.info-intro`, `.info-answers` and `.faq`.
 
-**On mobile** (<768px) the grid rules drop away: the section becomes a plain
-block, `.info-text` takes a `--gutter` inset, and the photos go full-width at
-their natural aspect ratio — still stacked with no gap between them.
+**On mobile** (<768px) the grid rules drop away entirely and the section becomes
+plain block flow — which means **the DOM order is the reading order**:
+
+```
+?  →  intro copy  →  photo 1  →  SOME ANSWERS  →  FAQ  →  photo 2
+```
+
+Each section is followed by its own photo, so the photos divide the page the same
+way they do on desktop. `.info-text` takes a `--gutter` inset while the photos go
+full-bleed at their natural aspect ratio. If you add a row, keep the same
+text-then-photo order in the markup and mobile follows automatically.
 
 **To swap a photo**, change the `<img src>`. Any reasonably large landscape image
 works, since it's cropped to fill; there's no aspect ratio to keep in sync any
 more.
+
+**To add a third section + photo**, add another text/photo pair with a new row
+class (`info-r3`), give it `grid-row: 3` alongside the other two in
+`css/style.css`, and keep the text-then-photo order in the markup.
 
 **The FAQ open/close animation.** A question slides its answer down when opened
 and back up when closed — same 0.34s either way — while the `+` rolls into an
@@ -1113,6 +1146,25 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — info page: each photo bound to its own section
+
+- Reworked the info split from *one text column beside one photo column* into
+  **two row-pairs** (`info-r1` / `info-r2`): each text block sits in a row with
+  its own photo.
+- **Desktop:** each photo now fills exactly its own row, so the seam between them
+  lands where section 1 ends instead of at an arbitrary half. Opening a FAQ item
+  grows row 2 only — **photo 2 resizes, photo 1 stays put** (previously both
+  changed, since they split one shared column height). `row-gap: 0` keeps them
+  flush despite the differing heights, and `object-fit: cover` + `min-height: 0`
+  keep each one filling its frame as the window scales.
+- **Mobile:** now plain block flow in DOM order, so the reading order is
+  `? → intro → photo 1 → SOME ANSWERS → FAQ → photo 2` — each section followed by
+  its own photo, rather than both photos landing at the bottom.
+- Added `.info-text.info-r1 { padding-bottom: 5rem }` as the single dial for
+  where the seam between the photos sits.
+- §1.17 updated: the row-pair diagram/markup, the four behaviours, the seam dial,
+  mobile order, and how to add a third row.
 
 ### 2026-07-19 — info page rebuilt as one text/photos split
 
