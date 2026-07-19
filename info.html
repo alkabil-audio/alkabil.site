@@ -15,33 +15,19 @@
 
   <main>
 
-    <!-- Intro -->
-    <section class="page-section theme-white" style="padding-top: var(--header-h);">
-      <div class="fgrid">
-        <div class="blk" style="--gd: 5/7/11/9;">
-          <h1 class="big-q">?</h1>
-        </div>
-        <div class="blk info-img" style="--gd: 1/14/22/27;">
-          <img src="/assets/info-1.jpeg" alt="">
-        </div>
-        <div class="blk" style="--gd: 12/4/14/12;">
-          <p>Alkabil started as a way for a small group of people to release and put music out there. Moving things non-linearly.</p>
-        </div>
-      </div>
-    </section>
+    <!-- Info: ONE two-column section — all the text on the left, the two photos
+         stacked flush on the right. The photo column stretches to whatever the
+         text column ends up being tall, and each photo fills half of it
+         (object-fit: cover), so they always touch and always match the text
+         height at any width. Layout guide: DOCUMENTATION §1.17. -->
+    <section class="page-section theme-white info-split" style="padding-top: var(--header-h);">
 
-    <!-- FAQ -->
-    <section class="page-section theme-white section-height--medium">
-      <div class="fgrid">
-        <div class="blk" style="--gd: 2/2/4/13;">
-          <h2>SOME ANSWERS</h2>
-        </div>
-        <!-- same grid area width + shared aspect box as the intro photo above,
-             so both info-page images render at identical size (§1.17) -->
-        <div class="blk info-img" style="--gd: 1/14/15/27;">
-          <img src="/assets/info-2.jpg" alt="">
-        </div>
-        <div class="blk faq" style="--gd: 5/2/11/12;">
+      <div class="info-text">
+        <h1 class="big-q">?</h1>
+        <p class="info-intro">Alkabil started as a way for a small group of people to release and put music out there. Moving things non-linearly.</p>
+
+        <h2 class="info-answers">SOME ANSWERS</h2>
+        <div class="faq">
           <details>
             <summary>Do you accept demos?</summary>
             <div class="faq-answer">
@@ -74,6 +60,13 @@
           </details>
         </div>
       </div>
+
+      <!-- The photo column. No gap between the two — they read as one strip. -->
+      <div class="info-photos">
+        <img src="/assets/info-1.jpeg" alt="">
+        <img src="/assets/info-2.jpg" alt="">
+      </div>
+
     </section>
 
     <!-- Newsletter -->
