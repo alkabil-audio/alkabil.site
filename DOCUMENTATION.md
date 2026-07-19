@@ -25,6 +25,8 @@ Contents:
    - [1.11 Change the height of things](#111-change-the-height-of-things)
    - [1.12 Artist page: bio width and name size](#112-artist-page-bio-width-and-name-size)
    - [1.13 Release-cover "window" shape (the tilted square)](#113-release-cover-window-shape-the-tilted-square)
+   - [1.13a Release-cover shadow and hover grow](#113a-release-cover-shadow-and-hover-grow)
+   - [1.13b Rounded section corners](#113b-rounded-section-corners)
    - [1.14 Writing HTML here — a mini style guide](#114-writing-html-here--a-mini-style-guide)
    - [1.15 The hero concentric-ring parallax](#115-the-hero-concentric-ring-parallax)
    - [1.16 The film-grain / static overlay](#116-the-film-grain--static-overlay)
@@ -248,9 +250,10 @@ In `index.html`, the last section before the footer:
 </details>
 ```
 
-Add or remove whole `<details>` blocks; the +/× icon and the divider lines
-come from CSS (`.faq` in `css/style.css`), no JS involved. Keep the inner
-`<div class="faq-answer">` wrapper — the open animation (§1.17) needs it.
+Add or remove whole `<details>` blocks; the +/× icon and the divider lines come
+from CSS (`.faq` in `css/style.css`). Keep the inner `<div class="faq-answer">`
+wrapper — the open/close animation (§1.17) needs it. New blocks are picked up
+automatically; nothing needs registering.
 
 ### 1.4 Change colors
 
@@ -291,11 +294,21 @@ in, its height and width — is §1.4a.
   that constant to make it appear sooner/later) and removes it again at the very
   top. The fade itself is the CSS `transition` on `.site-header` (0.4s); the JS
   only toggles the class.
-- **Pages without a dark hero keep the bar on.** Info, artists and artist pages
-  open on a *white* section, where a transparent bar would leave the white nav
-  text invisible — so they get `.scrolled` permanently. The dark hero is detected
-  by the presence of `.hero-title`; if you ever build another dark-topped page,
-  give it that class (or widen the check in `wireHeaderScroll`).
+- **It works on every page**, not just the home page. The only thing that varies
+  is the nav's colour while the bar is still clear, which depends on what the
+  page opens on. `wireHeaderScroll` checks the **first `.page-section`'s theme**:
+  - opens on `theme-white` / `theme-bright` (info, artist pages) → the header
+    gets **`.on-light`** and the nav switches to **dark** text until the tint
+    fades in, since white-on-white would be invisible;
+  - opens on the dark hero, or on photos with no `.page-section` at all (the
+    artists grid) → **white** text, plus a soft `drop-shadow` on `.header-inner`
+    so it stays legible over bright patches of the image behind;
+  - once `.scrolled`, every page is back to white text on the red tint.
+
+  This is automatic — a new page picks the right mode from its first section, so
+  there's nothing to register. If a page guesses wrong, force it by adding or
+  removing `on-light` on the header in `wireHeaderScroll`. While the mobile menu
+  is open the nav is always white (it sits on the red overlay).
 - **Height.** `padding: 0.9rem var(--gutter)` on `.site-header`. If you change
   it, update **`--header-h`** (currently `76px`) to match — pages that start
   under the fixed bar use it as their top padding.
@@ -472,17 +485,21 @@ Each release cover can be shown through a tilted-square **window** — a
 45°-rotated square (a diamond) — instead of a plain square. It's a CSS
 `clip-path`, so it's lean and needs no image editing.
 
-**Master switch — turn it off everywhere.** One line at the top of
-`css/style.css`, in `:root`:
+**Currently OFF.** The master switch is one line at the top of `css/style.css`,
+in `:root` — swap the value to toggle it site-wide, no page edits:
 
 ```css
---cover-clip: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);   /* the window */
---cover-clip: none;                                          /* effect OFF */
+--cover-clip: none;                                          /* OFF (current) */
+--cover-clip: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);   /* ON — the window */
 ```
 
-Set it to `none` and every cover reverts to a plain square, with no page edits.
-(The per-cover `clip-diamond` classes can stay where they are — with
-`--cover-clip: none` they simply do nothing.)
+The per-cover `clip-diamond` classes are still on the artist covers; with
+`--cover-clip: none` they simply do nothing, so flipping the value above brings
+the effect straight back.
+
+> **Note:** the window and the covers' drop shadow (§1.13a) don't combine — a
+> `clip-path` cuts away everything outside the shape, shadow included. Turn the
+> window on and the shadow disappears; that's expected, not a bug.
 
 **Turn it on/off per cover:** add or remove the `clip-diamond` class on the
 cover's `.release-cover` div:
@@ -493,9 +510,10 @@ cover's `.release-cover` div:
 </div>
 ```
 
-Remove `clip-diamond` → that one cover shows as a full square. It's applied to
-**artist release covers only** today; the home page's newest-release cover is
-left a plain square on purpose.
+Remove `clip-diamond` → that one cover shows as a full square. The class sits on
+**artist release covers only**; the home page's newest-release cover is left a
+plain square on purpose. (With the master switch off, none of them are windowed
+right now.)
 
 **Change the album image:** just swap the `<img src>` inside `.release-cover`
 (square art works best; the window crops the four corners).
@@ -519,6 +537,43 @@ To make a **new** named window (so different covers can use different shapes),
 add a rule with its own class (e.g.
 `.release-cover.clip-hex img { clip-path: polygon(…); }`) and put that class on
 the cover instead of `clip-diamond`.
+
+### 1.13a Release-cover shadow and hover grow
+
+Every release cover — on the artist pages **and** the home newest-release block —
+sits under a soft drop shadow and grows slightly when the pointer is over it.
+All of it is the `.release-cover` rules in `css/style.css`:
+
+- **Grow amount**: `--cover-hover-scale` in `:root` (currently `1.04` = 4%
+  bigger). Set it to `1` to switch the grow off while keeping the shadow.
+- **Speed/feel**: the `0.45s` transition on `.release-cover img` — it covers both
+  the scale and the shadow, so they move together.
+- **Shadow**: two `box-shadow`s — the resting one on `.release-cover img`, the
+  deeper hover one on `.release-cover:hover img`. Raise the blur/offset for a
+  more lifted look, or delete both lines for a flat cover.
+- The hover is on the **wrapper**, not the `<a>`, so it also works on covers that
+  aren't links yet (a "coming soon" release with no LISTEN/BUY target).
+- The grow is disabled under `prefers-reduced-motion`; the shadow stays.
+- Remember the interaction with the window crop: while `--cover-clip` is on, the
+  shadow is clipped away (§1.13).
+
+### 1.13b Rounded section corners
+
+The home newest-release section has curved corners while still running the full
+width of the page. It's one class in the markup:
+
+```html
+<section class="page-section theme-black section-height--medium rounded-section">
+```
+
+- **Radius**: `--section-radius` in `:root` (currently `28px`). Phones get 60% of
+  it automatically so the curve stays in proportion.
+- It works because `.page-section` already clips its contents
+  (`overflow: hidden`), so the background photo and the grain overlay follow the
+  rounding — nothing extra needed.
+- The corners reveal the page background (`body` is black) behind them.
+- **To round another section**, just add `rounded-section` to it. To square this
+  one off again, remove the class.
 
 ### 1.14 Writing HTML here — a mini style guide
 
@@ -652,22 +707,33 @@ derived from it, so on mobile — where the grid areas are ignored and blocks
 stack full-width — the two still match. **To swap either photo**, just change
 the `<img src>`; any reasonably wide image works, since the box crops it.
 
-**The FAQ open animation.** Opening a question slides its answer down instead
-of it popping in at full height, and the `+` rolls into an `×`. All in the
-`.faq` rules in `css/style.css`:
+**The FAQ open/close animation.** A question slides its answer down when opened
+and back up when closed — same 0.34s either way — while the `+` rolls into an
+`×`. It's mostly the `.faq` rules in `css/style.css`, plus a small assist from
+`wireFaq()` in `js/site.js`:
 
-- A native `<details>` only renders its content once open, so a CSS
-  *transition* never catches it — the reveal is a keyframe **animation**
-  (`faq-reveal`) that plays the moment the answer appears.
-- The slide is `grid-template-rows: 0fr → 1fr` on `.faq-answer`, which animates
-  a real height without a guessed `max-height` (so long answers can't get
+- **Opening is pure CSS.** A native `<details>` only renders its content once
+  open, so a CSS *transition* never catches it — the reveal is a keyframe
+  **animation** (`faq-reveal`) that plays the moment the answer appears.
+- **The slide** is `grid-template-rows: 0fr → 1fr` on `.faq-answer`, animating a
+  real height without a guessed `max-height` (so long answers can't get
   clipped). The inner element carries the padding and `overflow: hidden` so it
   clips itself while the row is still short.
-- **Speed**: the `0.34s` in both `faq-reveal` and the `summary::after`
-  transition — keep the two the same so the icon and the slide finish together.
+- **Closing needs the JS.** The browser drops a `<details>`'s content the instant
+  `open` is removed, so left alone it snaps shut with nothing to animate.
+  `wireFaq()` cancels that default click, adds `.closing` to play the reverse
+  `faq-hide` animation, and only then sets `open = false` (with a 500 ms safety
+  timeout so a panel can never stick open if the animation doesn't fire).
+- **Speed**: change it in *three* matching places — `faq-reveal`, `faq-hide`, and
+  the `summary::after` transition — so the two directions and the icon all stay
+  in step. If you slow it past ~0.5s, raise `CLOSE_MS` in `wireFaq()` to match.
+- **Rule order matters**: the `.faq details.closing …` rules must stay *after*
+  the `.faq details[open] …` ones — identical specificity, so source order is
+  what makes the closing state win.
 - **The icon**: `content: "+"` with `transform: rotate(225deg)` when open (a
   half-turn into an ×). `rotate(45deg)` gives a plain × with no spin.
-- Both are disabled under `prefers-reduced-motion`.
+- Under `prefers-reduced-motion` the animations are off and the JS doesn't
+  intervene, so it opens and closes instantly.
 
 ---
 
@@ -737,14 +803,15 @@ carry only `<header class="site-header"></header>` and
 links for depth, so there's no per-page or `../` bookkeeping for those.
 
 **The header is fixed and always on top** (`position: fixed; z-index: 1000`),
-so it persists as content scrolls under it. It carries white nav/brand text on a
-faint red frosted tint that **fades in only once the page is scrolled** — over
-the dark hero it starts fully transparent. Pages that don't open on that dark
-hero keep the tint permanently, so the white text always has something behind
-it; no page sets its own header color. Pages whose content begins at the very
-top add `padding-top: var(--header-h)` to their first section so nothing hides
-under the fixed bar. Full details — the scroll threshold, height/`--header-h`,
-and the full-bleed width — are in §1.4a.
+so it persists as content scrolls under it. It starts fully transparent on
+**every** page and its faint red frosted tint **fades in once the page is
+scrolled**. While the bar is clear, the nav colour adapts to whatever the page
+opens on — dark text on white/bright-topped pages, white text (with a soft
+shadow) over the hero and photos — so no page sets its own header color. Pages
+whose content begins at the very top add `padding-top: var(--header-h)` to their
+first section so nothing hides under the fixed bar. Full details — the scroll
+threshold, the light/dark detection, height/`--header-h`, and the full-bleed
+width — are in §1.4a.
 
 **Section themes** (`theme-black` / `theme-white` / `theme-bright`) set
 background + text color; a `section-bg` div with an `<img>` inside makes a
@@ -833,6 +900,37 @@ served-at-root requirement, so do it only once the site lives at
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-18 — scroll fade on all pages, cover shadow/hover, rounded section
+
+- **Header scroll fade now works on every page**, not just the home page.
+  Previously the other pages pinned the bar on permanently, because their white
+  first section would have hidden the white nav text. `wireHeaderScroll` now
+  reads the first section's theme instead: white/bright-topped pages get
+  `.on-light` and flip the nav to **dark** text while the bar is clear;
+  hero/photo-topped pages keep white text with a soft `drop-shadow` for
+  legibility. Both revert to white once the tint fades in, and the nav is always
+  white while the mobile menu is open (§1.4a).
+- **Release-cover window crop switched off** (`--cover-clip: none`). The
+  `clip-diamond` classes stay put, so flipping the one value turns it back on
+  (§1.13).
+- **Release covers gained a drop shadow and a hover grow** on the artist pages
+  and the home newest-release block — `--cover-hover-scale` (1.04) plus two
+  tunable `box-shadow`s; hover lives on the wrapper so non-link covers respond
+  too, and the grow is off under reduced motion (§1.13a).
+- **Home newest-release section has rounded corners** while staying full-bleed —
+  the new `rounded-section` class, radius `--section-radius` (28px, scaled down
+  on phones) (§1.13b).
+
+### 2026-07-18 — FAQ closes with an animation too
+
+- Closing a FAQ item now slides back up at the same 0.34s as opening, instead of
+  snapping shut. Needed a small JS assist (`wireFaq()` in `js/site.js`): a
+  `<details>` un-renders its content the instant `open` is removed, so the close
+  click is cancelled, a `.closing` class plays the reverse `faq-hide` keyframe,
+  and only then does the panel actually close (500 ms safety timeout so it can
+  never stick open). The `+` icon un-rotates in step. Still instant under
+  `prefers-reduced-motion` (§1.17).
 
 ### 2026-07-18 — info page: matched photos, animated FAQ
 
