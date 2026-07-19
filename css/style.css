@@ -649,31 +649,32 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 .big-q { font-size: calc(var(--h1-size) * 1.4); line-height: 1; }
 
 /* ---------------- Info page: the text/photos split ----------------
-   One section, two columns: all the text on the left, the two photos stacked
-   flush on the right. The row's height comes from the TEXT column, the photo
-   column stretches to match it, and each photo fills half of that height with
-   object-fit: cover — so the pair always touches, always ends level with the
-   text, and simply crops harder as the column narrows ("fit to area"). It also
-   re-matches itself when a FAQ item opens and the text grows. See §1.17. */
+   The page is TWO row-pairs, not one text column beside one photo column:
+
+     row 1  |  ? + intro          |  photo 1
+     row 2  |  SOME ANSWERS + FAQ |  photo 2
+
+   Each row's height is set by its own text, and its photo stretches to fill
+   exactly that — so the seam between the photos lands precisely where section 1
+   ends, and opening a FAQ item grows row 2 only (photo 2), leaving photo 1
+   alone. row-gap is 0, so the two still meet with no seam. Photos fill with
+   object-fit: cover, so narrowing the window just crops them harder rather than
+   leaving gaps ("fit to area"). See §1.17. */
 
 /* this section has no .fgrid, so it carries its own bottom breathing room
    (the top padding is the fixed-header allowance, set inline in info.html) */
 .info-split { padding-bottom: 6rem; }
 
-.info-text { padding: 0 var(--gutter); }         /* mobile inset; desktop uses the grid */
+/* MOBILE is plain block flow, so the DOM order *is* the reading order:
+   ? → intro → photo 1 → SOME ANSWERS → FAQ → photo 2 */
+.info-text { padding-left: var(--gutter); padding-right: var(--gutter); }
 .info-text .big-q { text-align: center; margin-top: 3rem; }   /* the ? is centred… */
 .info-intro { margin-top: 2rem; }                /* …everything else shares one left edge */
-.info-answers { margin-top: 6.5rem; }            /* the breath before SOME ANSWERS */
+.info-answers { margin-top: 3rem; }
 .info-text .faq { margin-top: 2.5rem; }
 
-/* gap:0 is the point — the two photos butt together as one strip */
-.info-photos {
-  display: grid;
-  gap: 0;
-  overflow: hidden;
-  min-height: 0;
-}
-.info-photos img { display: block; width: 100%; height: auto; }
+.info-photo { margin-top: 3rem; overflow: hidden; }
+.info-photo img { display: block; width: 100%; height: auto; }
 
 @media (min-width: 768px) {
   /* same column template as .fgrid, so the text lines up with the rest of the
@@ -685,18 +686,27 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
       repeat(24, minmax(0, calc((var(--site-max-width) - (var(--gap) * 23)) / 24)))
       minmax(var(--gutter), 1fr);
     column-gap: var(--gap);
-    align-items: stretch;          /* photo column matches the text column's height */
+    row-gap: 0;                    /* the two photos meet with no seam */
+    align-items: stretch;          /* each photo fills its own row */
   }
-  .info-text   { grid-column: 2 / 13; padding: 0; }
-  .info-photos {
+  .info-r1 { grid-row: 1; }
+  .info-r2 { grid-row: 2; }
+
+  .info-text { grid-column: 2 / 13; padding-left: 0; padding-right: 0; }
+  /* pads out row 1 so the two rows (and so the two photos) are better balanced —
+     without it row 1 is just the ? and one paragraph. Raise it to move the seam
+     between the photos DOWN, lower it to move the seam up. */
+  .info-text.info-r1 { padding-bottom: 5rem; }
+
+  .info-photo {
     grid-column: 14 / -1;          /* through the right gutter = full bleed */
-    grid-template-rows: 1fr 1fr;   /* two equal halves */
-    min-height: 0;                 /* lets the TEXT drive the height, not the images */
+    margin-top: 0;
+    min-height: 0;                 /* lets the TEXT drive the row height */
   }
-  .info-photos img {
+  .info-photo img {
     height: 100%;
     min-height: 0;
-    object-fit: cover;             /* fill the half, crop the overflow */
+    object-fit: cover;             /* fill the row, crop the overflow */
   }
 }
 
