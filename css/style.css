@@ -677,29 +677,40 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 .info-photo img { display: block; width: 100%; height: auto; }
 
 @media (min-width: 768px) {
-  /* same column template as .fgrid, so the text lines up with the rest of the
-     site and the photos can bleed through the right gutter to the screen edge */
+  /* Two full-bleed halves. Deliberately NOT the 1500px-capped .fgrid template
+     used elsewhere: that kept the text bunched toward the middle of wide
+     screens with a dead margin on the left. Here each half grows with the
+     window, so the text starts near the left edge and fills its side. */
   .info-split {
     display: grid;
-    grid-template-columns:
-      minmax(var(--gutter), 1fr)
-      repeat(24, minmax(0, calc((var(--site-max-width) - (var(--gap) * 23)) / 24)))
-      minmax(var(--gutter), 1fr);
-    column-gap: var(--gap);
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0;
     row-gap: 0;                    /* the two photos meet with no seam */
     align-items: stretch;          /* each photo fills its own row */
   }
   .info-r1 { grid-row: 1; }
   .info-r2 { grid-row: 2; }
 
-  .info-text { grid-column: 2 / 13; padding-left: 0; padding-right: 0; }
-  /* pads out row 1 so the two rows (and so the two photos) are better balanced —
-     without it row 1 is just the ? and one paragraph. Raise it to move the seam
-     between the photos DOWN, lower it to move the seam up. */
-  .info-text.info-r1 { padding-bottom: 5rem; }
+  .info-text {
+    grid-column: 1;
+    align-self: center;            /* centred against its photo */
+    /* Symmetric block padding does two jobs: it gives the photo beside it a
+       taller frame, and it keeps the text optically centred within that frame.
+       Raise/lower per row to resize that row's photo (and move the seam
+       between the two photos down/up). */
+  }
+  .info-text.info-r1 { padding-block: 7rem; }
+  .info-text.info-r2 { padding-block: 5rem; }
+  .info-text > :first-child { margin-top: 0; }   /* keeps the padding symmetric */
+
+  /* Type scales with the window: unchanged at ~1280px and up to the caps, and
+     shrinking below that so the wider column never forces a cramped line. */
+  .info-text { font-size: clamp(0.95rem, 1.8vw, 1.25rem); }
+  .info-answers { font-size: clamp(1.9rem, 6.2vw, var(--h2-size)); }
+  .info-text .faq summary { font-size: clamp(1.15rem, 2.7vw, 1.95rem); }
 
   .info-photo {
-    grid-column: 14 / -1;          /* through the right gutter = full bleed */
+    grid-column: 2;                /* right half, out to the screen edge */
     margin-top: 0;
     min-height: 0;                 /* lets the TEXT drive the row height */
   }
