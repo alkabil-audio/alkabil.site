@@ -165,8 +165,11 @@ To **change the release**, edit in place:
    shows it through a tilted-square window (§1.13 — currently switched off).
    **If you move the title's row-start, move the cover's to match** — that's what
    keeps the artwork level with the title (§1.13c).
-2. **Title** — the `<h2 class="release-title">`. It's forced to lowercase by CSS
-   (`text-transform`); type it however you like.
+2. **Title** — the `<h2 class="release-title">`. It renders **exactly as you type
+   it**: `East End Echoes Vol. 1` shows with those capitals. (Note the CSS says
+   `text-transform: none` rather than leaving the property out — `.release-title`
+   is an `<h2>`, and the global `h1–h4` rule forces uppercase, so it has to opt
+   out explicitly. If titles ever start SHOUTING, that line got removed.)
 3. **Blurb** — the `<p>` inside `release-desc`. Add more `<p>`s for more
    paragraphs; wrap a phrase in `<em>…</em>` for italics; links are normal
    `<a href>`.
@@ -644,11 +647,12 @@ placed independently, any difference is a permanent vertical offset:
 --gd: 5/2/10/13    ← title starts row 5     → cover floats ~2 rows above the text
 ```
 
-Grid rows are a **fixed height** (`--row-h`, derived from the viewport width),
-*not* a share of the content — so the offset doesn't shrink when text is short;
-it's the same gap on every page. It simply *reads* worse next to a tall text
-column, which is why a long description makes it obvious while a one-line blurb
-hides it.
+Grid rows have a **set minimum height** (`--row-h`, derived from the window
+width) and only grow past it if the content in them needs more — they are *not* a
+share of the content. Rows 3–4 there hold nothing, so they stay at that minimum,
+and the offset is the same on every page regardless of how long the blurb is. It
+simply *reads* worse next to a tall text column, which is why a long description
+made it obvious while a one-line blurb hid it.
 
 So: **when you change a title's row-start, change the cover's to match.** If you
 restack the left column (e.g. a longer blurb pushes the button down), only the
@@ -697,14 +701,108 @@ button. If you'd rather the artwork sat below the text on phones, move the
 `.release-cover` div after the other three in the HTML — desktop is unaffected,
 because there the grid areas place everything regardless of source order.
 
+#### Reading and calculating the `--gd` numbers
+
+Every `.blk` is positioned by one custom property:
+
+```html
+<div class="blk release-desc" style="--gd: 10/2/16/13;">
+                                    │  │  │  └── column-end line
+                                    │  │  └───── row-end line
+                                    │  └──────── column-start line
+                                    └─────────── row-start line
+```
+
+It feeds straight into CSS `grid-area`, so the order is **row-start /
+column-start / row-end / column-end**. All four are **grid line numbers, not
+counts**, and the end lines are **exclusive** — `10 … 16` occupies rows 10, 11,
+12, 13, 14 and 15: six rows, `16 − 10`.
+
+**The columns (fixed, 27 lines).** The grid is a gutter, 24 content columns, and
+another gutter:
+
+| Line | Where it is |
+| ---- | ----------- |
+| 1  | far left edge of the screen |
+| 2  | start of the content area — **the site's normal left margin** |
+| 13 | just under halfway (where the release text column ends) |
+| 15 | where the cover starts |
+| 26 | end of the content area — the normal right margin |
+| 27 | far right edge of the screen (**use this to bleed an image off-page**) |
+
+So `2 → 13` is the left text column, `15 → 26` is the cover, and column 14 is the
+empty channel between them. Those numbers are shared by every release block on
+the site — you rarely need to touch them. Column-start **2** is what lines the
+release text up with headings on every other page.
+
+**The rows (as many as you need).** Rows aren't declared anywhere; they're
+created on demand. Each is:
+
+```css
+grid-auto-rows: minmax(var(--row-h), auto);
+--row-h: calc(min(1500px, 100vw - var(--gutter) * 2) * 0.0215);
+```
+
+Two consequences worth understanding:
+
+- A row is **at least `--row-h`** — roughly **25px** at a 1280px window, **32px**
+  at 1920px — plus the 11px `gap` between rows. Call one **row step ≈ 36–43px**.
+- `auto` is the maximum, so a row **grows if its content needs more**. You cannot
+  clip text by under-allocating rows; the row simply expands and everything below
+  it moves down. The row numbers set the *intended* rhythm, and content wins when
+  it disagrees.
+
+**A rule of thumb that works.** Because a line of body copy (~37px) is almost
+exactly one row step:
+
+> **1 row ≈ 1 line of blurb. 1 line of release title ≈ 2.5 rows.**
+
+Check it against the two live pages:
+
+| Block | Hernández | Yslas |
+| ----- | --------- | ----- |
+| Title | 2 lines → `5/2/10/13` = **5 rows** | 1 line → `5/2/8/13` = **3 rows** |
+| Blurb | ~6 lines → `10/2/16/13` = **6 rows** | 1 line → `8/2/10/13` = **2 rows** |
+| Button | `16/2/18/8` = **2 rows** | `10/2/12/8` = **2 rows** |
+
+**How to calculate a new release's rows.** Work down the left column, each block
+starting where the last one ended:
+
+1. **Title** — count how many lines it will wrap to in the half-width column
+   (roughly 18–20 characters per line at full size). Rows = lines × 2.5, rounded
+   up. Start it at row **5**.
+   *"East End Echoes Vol. 1"* → 2 lines → 5 rows → `5/2/10/13`.
+2. **Blurb** — estimate its lines (~45–50 characters per line). Rows ≈ that
+   number. Start where the title ended.
+   ~6 lines → `10/2/16/13`.
+3. **Button** — always **2 rows**, starting where the blurb ended, and **6
+   columns** wide so the label can't wrap: `16/2/18/8`.
+4. **Cover** — row-start **must equal the title's** (5). For row-end, give it
+   roughly the height of the whole text column, so the section doesn't end
+   awkwardly above or below the artwork: `5/15/24/26`. The cover's real height
+   comes from the image, not this number (Rule 2), so it's a soft value — adjust
+   it if the section has too much or too little space under the cover.
+
+**The only hard constraint** is that the left-column blocks must not overlap:
+each block's **row-end must equal the next block's row-start**. Equal = flush,
+which is what you want. Larger would leave a deliberate gap; smaller means two
+blocks claim the same rows and they'll collide.
+
+**When in doubt, just adjust and look.** Because rows auto-grow, being a row or
+two out is a spacing imperfection, not a broken layout. Nudge the numbers, keep
+the chain flush, and keep the cover's row-start matched to the title's.
+
 #### Checklist when adding or editing a release
 
 1. Cover row-start **==** title row-start.
-2. Left-column blocks stack without overlapping (each row-end ≤ the next
-   row-start).
-3. Cover row-end roughly where the artwork ends.
-4. Button block wide enough for its label.
-5. Swap `<img src>`, title, blurb, and the `.btn` href.
+2. Left-column blocks chain flush: each row-end **==** the next row-start.
+3. Row counts roughly match the content (1 row per blurb line, 2.5 per title
+   line) — see the calculation guide above.
+4. Cover row-end roughly where the artwork ends.
+5. Button block 2 rows tall and 6 columns wide (`…/2/…/8`) so its label can't
+   wrap.
+6. Swap `<img src>`, title, blurb, and the `.btn` href. The title renders exactly
+   as typed — capitalise it however you like.
 
 (Adding a *second* release = copying the whole `<section>`: §1.1.3.)
 
@@ -1174,6 +1272,27 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — release titles render as typed + `--gd` guide
+
+- **Release titles are no longer forced to lowercase.** `.release-title` was
+  `text-transform: lowercase`, so retyping a title as "East End Echoes Vol. 1"
+  changed nothing on screen. It's now `text-transform: none` — note the explicit
+  `none`: `.release-title` is an `<h2>` and the global `h1–h4` rule forces
+  uppercase, so simply deleting the line would have made titles SHOUT instead.
+  Casing now lives in the HTML.
+- New **§1.13c → "Reading and calculating the `--gd` numbers"**: what each of the
+  four digits means (row-start / col-start / row-end / col-end, as exclusive grid
+  *line* numbers), a table of what each column line is for, how row height works
+  (`minmax(--row-h, auto)` — a ~25–32px minimum that grows to fit, so text can't
+  be clipped), the "1 row ≈ 1 blurb line, 2.5 rows ≈ 1 title line" rule of thumb
+  checked against both live pages, a step-by-step calculation for a new release,
+  and the one hard constraint (each block's row-end == the next's row-start).
+- Corrected an inaccuracy in §1.13c: rows were described as a "fixed height".
+  They're a *minimum* that grows if content needs it — which is why an
+  under-allocated block pushes the page down rather than clipping.
+- §1.1.3 updated (the title is no longer described as force-lowercased) and the
+  release checklist expanded to six points.
 
 ### 2026-07-19 — info page: centred text, full-width halves, fluid type
 
