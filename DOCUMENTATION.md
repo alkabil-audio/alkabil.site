@@ -406,7 +406,8 @@ form): add your access key as a hidden input, point the `fetch()` in
    and gut the `<main>`). Only artist pages live in a subfolder; everything
    else is a root-level `.html` file. It will be served at **`/newpage`**.
 2. Build sections as `<section class="page-section theme-...">` containing a
-   `.fgrid` with `.blk` children (see §2 for the grid).
+   plain flex/grid container that sizes itself to its content — copy an existing
+   section's pattern (see §2). There are no positioning coordinates to set.
 3. Link it from the nav by adding a line to `NAV_LINKS` in `js/site.js` — use
    the clean slug, `['New page', '/newpage']` (no `.html`, leading `/`; §4.1).
    That updates the header and mobile menu on **every** page at once (§1.9).
@@ -460,13 +461,11 @@ block (`.artist-release`, `4rem`), the info split (`.info-split`) and the "WE
 ARE" band each carry their own padding, listed in `css/style.css` beside their
 layout rules.
 
-**b) A single block inside a section** (desktop) gets its height from how many
-grid **rows** its `--gd` spans. `--gd` is `row-start / col-start / row-end /
-col-end`; a bigger gap between row-start and row-end = taller. One row is
-`--row-h`, currently ~2.15% of the content width (`--row-h` in the
-`@media (min-width: 768px)` block of `css/style.css`) — raise that factor to
-make every row (and thus the whole desktop grid) taller. On mobile the `--gd`
-rows are ignored and blocks size to their content.
+**b) A single block inside a section** takes its height from its **content** —
+there are no row counts to set. To give one more room, add padding or a margin
+in its own rule in `css/style.css` (e.g. `.info-text.info-r1 { padding-block }`,
+`.artist-release { padding }`). Blocks grow and shrink with their text
+automatically, on every screen size.
 
 **c) Specific fixed-height elements** have their own rule in `css/style.css`:
 
@@ -479,23 +478,19 @@ Change the value in the rule to resize.
 
 ### 1.12 Artist page: bio width and name size
 
-**Width of the name + bio.** On desktop, the bio block's width is set by its
-grid area — the `--gd` on the `artist-bio` div in each artist page:
+**Width of the name + bio.** One number in `css/style.css`, applying to every
+artist page at once:
 
-```html
-<div class="blk artist-bio" style="--gd: 2/4/14/22;">
+```css
+.artist-bio { max-width: 1120px; margin: 0 auto; padding: 3rem var(--gutter) 0; }
 ```
 
-The two **column** numbers (here `4` … `22`) are the left and right edges on the
-24-column grid. Columns run **1–27**, where 1 and 27 are the outer gutters, so
-usable content lives in **2–26**. So:
+- **Wider** → raise `max-width` (or remove it for the full page width).
+- **Narrower** → lower it.
 
-- **Wider** → smaller col-start / larger col-end (e.g. `2/3/14/25`, or full
-  content width `2/2/14/26`).
-- **Narrower** → move them inward (the old value was `…/8/…/20`).
-
-Change it on each artist page independently. (On mobile the grid areas are
-ignored and the bio is full-width with gutters regardless.)
+The bio is centred, and on phones it goes full-width with `--gutter` padding
+automatically. To make one artist's bio different from the others, add a class to
+that page's `.artist-bio` div and give it its own `max-width`.
 
 **Name size.** The artist name is deliberately about half the normal `h1`. It's
 set once in `css/style.css`:
@@ -534,8 +529,8 @@ the effect straight back.
 cover's `.release-cover` div:
 
 ```html
-<div class="blk release-cover clip-diamond" style="--gd: 5/8/21/20;">
-  <a href="…"><img src="assets/cover.jpg" alt="…"></a>
+<div class="release-cover clip-diamond">
+  <img src="/assets/cover.jpg" alt="…">
 </div>
 ```
 
@@ -686,9 +681,9 @@ The site is plain HTML/CSS; a few conventions keep it consistent:
   `https://…` for off-site, always with `target="_blank" rel="noopener"` for
   external links.
 - **Section skeleton** — a page's content is a stack of
-  `<section class="page-section theme-…">`, each containing a `.fgrid`, each
-  holding `.blk` children placed with `--gd` (§2). Reuse an existing section as
-  a template rather than writing grid CSS by hand.
+  `<section class="page-section theme-…">`, each containing a plain container
+  that lays itself out from its content (§2). **No positioning coordinates** —
+  reuse an existing section as a template rather than inventing a grid.
 - **Themes** — `theme-black` (white on black), `theme-white` (black on white),
   `theme-bright` (black on light gray). Set the mood by the class on the
   section; don't set colors inline.
@@ -702,8 +697,8 @@ The site is plain HTML/CSS; a few conventions keep it consistent:
   `ARTISTS` registry (§1.1). Edit those in one place, never per page.
 - **Full-bleed background photo**: a `<div class="section-bg"><img …></div>` as
   the first child of a section (see the hero and newest-release sections).
-- **Keep source order = reading order** — mobile ignores the desktop `--gd`
-  grid and simply stacks blocks in the order they appear in the HTML.
+- **Keep source order = reading order** — on mobile the multi-column layouts
+  collapse and blocks simply stack in the order they appear in the HTML.
 
 ### 1.15 The hero concentric-ring parallax
 
@@ -750,12 +745,12 @@ overflow) is in `css/style.css` under "Hero concentric-ring parallax".
 
 Any section with a background image can carry an animated **grain/static**
 overlay. It's a `<div class="grain">` placed after the section's `.section-bg`
-and before its `.fgrid`:
+and before the section's content:
 
 ```html
-<div class="section-bg"><img src="assets/alkabil-web-5.jpg" alt=""></div>
+<div class="section-bg"><img src="/assets/alkabil-web-5.jpg" alt=""></div>
 <div class="grain" aria-hidden="true"></div>
-<div class="fgrid"> … </div>
+<div class="newest-inner"> … </div>
 ```
 
 It's on the newest-release section today. To add it elsewhere, drop the same
@@ -972,45 +967,35 @@ PNG from a raster source: drop the new mark at `assets/logo-red.png` and run
 `python tools/make-favicon.py` (needs Pillow). Every page links it the same way,
 root-absolute (`/assets/favicon.svg`), including `404.html`.
 
-**The grid, and what `--gd`'s four numbers mean.** The original Squarespace
-"fluid engine" laid blocks on a 24-column grid, and the rebuild keeps those
-placements. A section's content is a `.fgrid` (24 columns plus a gutter column
-each side, 11px gaps), and each `.blk` inside it is positioned by one inline
-value:
+**No coordinates anywhere.** The rebuild originally copied Squarespace's
+24-column "fluid engine", where every block was hand-placed with a `--gd:
+row/col/row/col` value. **That system is gone.** Every section now lays itself
+out from its content, so editing copy never means recalculating a position:
 
-```html
-<div class="blk" style="--gd: 10/8/26/20;">
-```
+| Section | How it lays out | Where |
+| ------- | --------------- | ----- |
+| Hero (home) | logo left, wordmark + tagline right; parked at the bottom | `.hero-inner` |
+| Photo strip (home) | two equal columns | `.home-gallery` |
+| "WE ARE" band (home) | one full-width padded block | `.we-are` |
+| Newest release (home) | centred stack: marquee, cover, marquee | `.newest-inner` |
+| Artists grid | equal tiles | `.portfolio-grid` |
+| Artist bio | one centred measure | `.artist-bio` (§1.12) |
+| Artist release | text left, cover right, tops aligned | `.artist-release` (§1.13c) |
+| Info page | two row-pairs, text + photo each | `.info-split` (§1.17) |
+| Newsletter | marquee, then the centred form | `.newsletter-section` |
 
-Read plainly, **that block starts on row 10, starts on column 8, stops before
-row 26, and stops before column 20** — so it covers rows 10–25 and columns 8–19.
-In order:
+Each has **one or two obvious dials** — a `max-width`, a `padding`, or a
+`grid-template-columns` — named in the CSS beside its rules, rather than a set of
+row/column numbers per block.
 
-| Position | Example | Means |
-| -------- | ------- | ----- |
-| 1st | `10` | **top edge** — which row it starts on |
-| 2nd | `8`  | **left edge** — which column it starts on |
-| 3rd | `26` | **bottom edge** — the row it stops *before* |
-| 4th | `20` | **right edge** — the column it stops *before* |
+**If you're adding a section**, follow the same approach: a `<section
+class="page-section theme-…">` containing a plain flex/grid container. Give the
+container its own padding; use `max-width` + `margin: 0 auto` for a centred
+measure. Don't reintroduce `--gd`.
 
-So it's **top / left / bottom / right**, and the last two are where the block
-*ends*, not how far it spans. Subtract to get the size: `26 − 10` = 16 rows tall,
-`20 − 8` = 12 columns wide.
-
-**Columns** run 1–27. Column line 2 is the site's normal left margin and 26 the
-right one; 1 and 27 are the outer gutters, so using **27** on the right (or 1 on
-the left) bleeds a block off the edge of the screen. **Rows** aren't fixed
-slots — each is at least ~2.15% of the container tall and **grows if its content
-needs more room**, so text can't be clipped by giving a block too few rows; the
-row just expands and pushes what's below it down.
-
-**On mobile (<768px) the grid areas are ignored entirely** and blocks stack
-full-width in document order — so keep the HTML in reading order.
-
-Newer sections skip this system altogether and use ordinary flowing layouts
-(the artist release block §1.13c, the info page §1.17, the "WE ARE" band). Those
-have no `--gd` at all and size themselves to their content — preferred for
-anything new.
+**On mobile (<768px)** these layouts collapse to single-column block flow, so
+**document order becomes reading order** — keep the HTML in the order you want it
+read on a phone.
 
 **Header, mobile menu, and footer are injected by `js/site.js`** into empty
 shells on each page (see §1.9), so the nav/footer live in one place. Pages
@@ -1166,6 +1151,39 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — grid coordinates removed site-wide
+
+- **Fixed a break on the home page.** The previous change added
+  `.release-cover { grid-column: 15/26; grid-row: 1 }` *unscoped*, which also
+  captured the home page's newest-release cover and dropped it on top of the
+  "NEWEST ///" marquee. Those rules are now scoped to `.artist-release >`.
+- **Audited the whole site and removed every `--gd`.** The four sections still
+  using hand-placed grid coordinates were converted to layouts that size
+  themselves to their content:
+  - **Hero** → `.hero-inner`, a two-track grid (logo takes its width, copy takes
+    the rest). The copy column keeps a definite width because the wordmark and
+    tagline size their text with container-query units.
+  - **Newest release** → `.newest-inner`, a centred column: marquee, cover,
+    marquee. Cover size is now one `max-width`.
+  - **Newsletter** → `.newsletter-section`, marquee then a centred form.
+  - **Artist bio** → `.artist-bio`, one centred `max-width` (was two column
+    numbers per page).
+
+  `--gd`, `.blk` and `.fgrid` no longer appear in any page.
+- **Also fixed while auditing:** the newsletter email field had `min-width: 18rem`
+  (378px) — wider than a phone. It was overflowing and merely being hidden by the
+  section's `overflow: hidden`; now capped to the available width.
+- Removed the global `.release-cover { align-self: start }`: in the new flex
+  **column** on the home page, `align-self` is the *horizontal* axis, so it was
+  jamming the cover to the left edge. The artist pages get the same effect from
+  `align-items: start` on `.artist-release`.
+- Verified at 1280px and 375px on the home, artist and info pages: no horizontal
+  overflow anywhere, hero parked correctly, cover centred, release tops aligned,
+  button on one line, info photos still flush, marquees still animating.
+- Docs: §2 rewritten as a table of how each section lays itself out (replacing
+  the `--gd` explanation), plus §1.8, §1.11, §1.12, §1.13, §1.14, §1.16 and the
+  README updated to match.
 
 ### 2026-07-19 — releases lay themselves out; "WE ARE" scales
 
