@@ -690,11 +690,15 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   grid-template-rows: 1fr;
   padding: 0;
 }
+/* NOTE: .faq-answer must hold exactly ONE child — the animation drives a single
+   grid row, so extra children would land in an implicit row that never
+   collapses. For a multi-paragraph answer, wrap the <p>s in one <div>. */
 .faq .faq-answer > * {
   min-height: 0;
   overflow: hidden;
   padding: 0.8em 0 0.4em;   /* on the inner box so it's clipped away too */
 }
+.faq .faq-answer p + p { margin-top: 0.7em; }   /* spacing inside a wrapped answer */
 .faq details[open] .faq-answer {
   animation: faq-reveal 0.34s cubic-bezier(0.25, 0.6, 0.3, 1);
 }
