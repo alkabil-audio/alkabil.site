@@ -22,10 +22,18 @@
          height at any width. Layout guide: DOCUMENTATION §1.17. -->
     <section class="page-section theme-white info-split" style="padding-top: var(--header-h);">
 
-      <div class="info-text">
+      <!-- ROW 1: the "?" intro, and its photo -->
+      <div class="info-text info-r1">
         <h1 class="big-q">?</h1>
         <p class="info-intro">Alkabil started as a way for a small group of people to release and put music out there. Moving things non-linearly.</p>
+      </div>
+      <div class="info-photo info-r1">
+        <img src="/assets/info-1.jpeg" alt="">
+      </div>
 
+      <!-- ROW 2: SOME ANSWERS + the FAQ, and its photo. Only this row grows when
+           a FAQ item opens, so only the second photo changes height. -->
+      <div class="info-text info-r2">
         <h2 class="info-answers">SOME ANSWERS</h2>
         <div class="faq">
           <details>
@@ -60,10 +68,7 @@
           </details>
         </div>
       </div>
-
-      <!-- The photo column. No gap between the two — they read as one strip. -->
-      <div class="info-photos">
-        <img src="/assets/info-1.jpeg" alt="">
+      <div class="info-photo info-r2">
         <img src="/assets/info-2.jpg" alt="">
       </div>
 
