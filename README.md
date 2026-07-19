@@ -18,13 +18,13 @@ artist page, swap the newest release, edit the FAQ, and wire up the newsletter.
   each panel an artist photo with a hover overlay and their name.
 - **Artist pages** (`artists/<slug>.html`): the only subfolder with pages —
   one file per artist (like the jehernandez site's `work/`): bio + links, a
-  full-width banner image, and their current release (cover shown through a
-  tilted-square window, blurb, LISTEN/BUY button), with linear Previous/Next
+  full-width banner image, and their current release (cover with a drop shadow
+  and hover grow, blurb, LISTEN/BUY button), with linear Previous/Next
   navigation between artists
   (first artist shows only Next, last only Previous).
 - **Info** (`info.html`): the big "?", the label intro, the SOME ANSWERS FAQ
-  (native `<details>` accordions — no JS), and the "Subscribe" marquee +
-  newsletter signup.
+  (native `<details>` accordions that slide open and closed), and the
+  "Subscribe" marquee + newsletter signup.
 - **No frameworks, no build step, no trackers, no external requests.** One
   stylesheet (`css/style.css`), one script (`js/site.js`), plain HTML pages,
   self-hosted fonts. `site.js` injects the header/menu/footer from single
@@ -48,11 +48,15 @@ artist page, swap the newest release, edit the FAQ, and wire up the newsletter.
 - **Layout**: sections reuse the original's 24-column grid placements — each
   block carries its desktop grid area in a `--gd: row/col/row/col` custom
   property (mobile just stacks in document order). See DOCUMENTATION.md §2.
-- **All paths are relative and all links point at `.html` files** — no clean
-  slugs yet. That means the site works from a GitHub *project* page
-  (`user.github.io/repo/`), a custom domain, any subfolder, a local server,
-  and even double-clicked from disk. (Clean Squarespace-style URLs can come
-  back later — DOCUMENTATION.md §4.)
+- **Clean URLs, matching the old Squarespace paths** — `/`, `/info`,
+  `/artists`, `/artists/yslas`. No `.html` in any link: GitHub Pages and
+  Netlify both serve `info.html` at `/info`, so there's no build step. Links
+  and asset paths are root-absolute (`/css/style.css`), which means the site
+  **must be served from a domain root** — a custom domain or a user page, not a
+  GitHub *project* subpath, and not `file://`. Full rules: DOCUMENTATION.md §4.
+- **Local preview** needs a pretty-URL server: `npx serve .` or `netlify dev`.
+  `python -m http.server` won't resolve `/info` and every nav link will 404
+  (DOCUMENTATION.md §3).
 - **/merch**: `merch.html` is a meta-refresh forward to Bandcamp until the
   real Merch page exists; `_redirects` covers the old `/merch` URL on
   Netlify. Delete both when Merch gets built (DOCUMENTATION.md §1.10).
@@ -61,7 +65,7 @@ artist page, swap the newest release, edit the FAQ, and wire up the newsletter.
   (DOCUMENTATION.md §1.7).
 - **404**: `404.html` at the root — the marquee treatment scrolling
   "404 ///" / "not found \\\" around a go-back link. Fully self-contained
-  (GitHub Pages serves it at any depth, where relative paths would break).
+  (inlined CSS), since it's served at whatever URL was missed.
 - **Deploy**: push to GitHub → Settings → Pages (the custom domain you enter
   there generates `CNAME`; `.nojekyll` is already in place). Or drag the
   folder onto https://app.netlify.com — security headers for Netlify live in
