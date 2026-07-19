@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Info &mdash; ALKABIL</title>
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="icon" type="image/png" href="assets/favicon.png">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="theme-white">
 
@@ -22,7 +22,7 @@
           <h1 class="big-q">?</h1>
         </div>
         <div class="blk info-img" style="--gd: 1/14/22/27;">
-          <img src="assets/info-1.jpeg" alt="">
+          <img src="/assets/info-1.jpeg" alt="">
         </div>
         <div class="blk" style="--gd: 12/4/14/12;">
           <p>Alkabil started as a way for a small group of people to release and put music out there. Moving things non-linearly.</p>
@@ -39,7 +39,7 @@
         <!-- same grid area width + shared aspect box as the intro photo above,
              so both info-page images render at identical size (§1.17) -->
         <div class="blk info-img" style="--gd: 1/14/15/27;">
-          <img src="assets/info-2.jpg" alt="">
+          <img src="/assets/info-2.jpg" alt="">
         </div>
         <div class="blk faq" style="--gd: 5/2/11/12;">
           <details>
@@ -58,6 +58,18 @@
             <summary>HOW DO ARTISTS GET PAID?</summary>
             <div class="faq-answer">
               <p>Artists retain 100% creative rights. We really only help with some promotion, but most importantly getting music out there in all services.</p>
+            </div>
+          </details>
+          <!-- AI statement — the short version of §9A of the artist agreement -->
+          <details>
+            <summary>WHAT ABOUT AI?</summary>
+            <!-- multi-paragraph answer: the <p>s share ONE wrapper, because the
+                 open/close slide animates a single grid row (§1.17) -->
+            <div class="faq-answer">
+              <div>
+                <p>Everything we release is made by people. We don't sign AI or synthetic artists, and we don't license our music, voices, likenesses, or metadata to AI training or datasets &mdash; that's written into every artist agreement, not just a stance we say out loud.</p>
+                <p>Ordinary studio tools are still tools; the line is anything that generates the substance of the work in place of a human. We can't police every platform that scrapes the web, but we're careful about who we work with, and we chase down what we find.</p>
+              </div>
             </div>
           </details>
         </div>
@@ -89,6 +101,6 @@
   <!-- footer injected by js/site.js -->
   <footer class="site-footer"></footer>
 
-  <script src="js/site.js"></script>
+  <script src="/js/site.js"></script>
 </body>
 </html>
