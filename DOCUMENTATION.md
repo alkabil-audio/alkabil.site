@@ -27,7 +27,7 @@ Contents:
    - [1.13 Release-cover "window" shape (the tilted square)](#113-release-cover-window-shape-the-tilted-square)
    - [1.13a Release-cover shadow and hover grow](#113a-release-cover-shadow-and-hover-grow)
    - [1.13b Rounded section corners](#113b-rounded-section-corners)
-   - [1.13c Artist-page release layout — alignment, hover area, the button](#113c-artist-page-release-layout--alignment-hover-area-the-button)
+   - [1.13c Artist-page release layout](#113c-artist-page-release-layout)
    - [1.14 Writing HTML here — a mini style guide](#114-writing-html-here--a-mini-style-guide)
    - [1.15 The hero concentric-ring parallax](#115-the-hero-concentric-ring-parallax)
    - [1.16 The film-grain / static overlay](#116-the-film-grain--static-overlay)
@@ -136,35 +136,33 @@ The release block sits at the bottom of the artist page, before the Prev/Next
 nav. It has four editable parts:
 
 ```html
-<section class="page-section theme-white section-height--medium">
-  <div class="fgrid">
-    <!-- the cover art — row-start (5) matches the title's, §1.13c -->
-    <div class="blk release-cover clip-diamond" style="--gd: 5/15/24/26;">
-      <img src="/assets/newartist-cover.jpg" alt="Release title cover">
-    </div>
+<section class="page-section theme-white artist-release">
+  <!-- the cover art -->
+  <div class="release-cover clip-diamond">
+    <img src="/assets/newartist-cover.jpg" alt="Release title cover">
+  </div>
+  <div class="release-text">
     <!-- the title -->
-    <div class="blk" style="--gd: 5/2/10/13;">
-      <h2 class="release-title">release title here</h2>
-    </div>
+    <h2 class="release-title">Release Title Here</h2>
     <!-- the blurb -->
-    <div class="blk release-desc" style="--gd: 10/2/16/13;">
+    <div class="release-desc">
       <p>A sentence or two about the release…</p>
     </div>
-    <!-- the button — 6 columns wide so the label can't wrap, §1.13c -->
-    <div class="blk" style="--gd: 16/2/18/8;">
-      <a class="btn" href="https://tr.ee/…" target="_blank" rel="noopener">LISTEN/BUY</a>
-    </div>
+    <!-- the button -->
+    <a class="btn" href="https://tr.ee/…" target="_blank" rel="noopener">LISTEN/BUY</a>
   </div>
 </section>
 ```
+
+**No positioning numbers.** The block lays itself out — the cover top-aligns with
+the title on its own, and the text flows, so a longer title or an extra paragraph
+just makes the block taller. Edit the content and nothing else (§1.13c).
 
 To **change the release**, edit in place:
 
 1. **Cover art** — replace the `<img src>` (drop the file in `assets/`; the path
    is root-absolute, `/assets/…`). Covers are square; the `clip-diamond` class
    shows it through a tilted-square window (§1.13 — currently switched off).
-   **If you move the title's row-start, move the cover's to match** — that's what
-   keeps the artwork level with the title (§1.13c).
 2. **Title** — the `<h2 class="release-title">`. It renders **exactly as you type
    it**: `East End Echoes Vol. 1` shows with those capitals. (Note the CSS says
    `text-transform: none` rather than leaving the property out — `.release-title`
@@ -177,9 +175,7 @@ To **change the release**, edit in place:
    Bandcamp / store URL. If nothing is out yet, use `href="#"` and change the
    text to e.g. `coming soon` (see Yslas' page for the "no release yet" version).
 
-The `--gd` values position each block on the desktop grid (row/col numbers, see
-§2 and §1.11); leave them unless you want to move things. On mobile the blocks
-just stack in source order.
+On mobile the cover and the text just stack in source order (cover first).
 
 **Adding another release (an artist with several).** An artist can list any
 number of releases — each release is one whole `<section>` (the block shown
@@ -195,10 +191,9 @@ above), and they simply stack down the page. To add one:
 3. **Keep the Prev/Next nav last.** `<nav class="item-pagination" …>` must stay
    the final thing in `<main>`, after **all** release sections.
 4. **Fill in the four parts** of the new section exactly as above — cover,
-   title, blurb, button — so every release has the identical format. Each
-   section carries its own `clip-diamond` (or not) and its own `--gd`
-   placements; leave the `--gd` values the same on each release and they'll all
-   lay out identically.
+   title, blurb, button — so every release has the identical format. Since the
+   layout has no positioning values, every copied section lays out identically
+   whatever its content; each carries only its own `clip-diamond` (or not).
 
 There's no limit — three or four release sections stack the same way. (In-page
 reminder: there's a comment on the release section in each artist's HTML.)
@@ -460,6 +455,11 @@ numbers in `css/style.css` (search `section-height--`). To make the hero *not*
 full-screen, change `.section-height--large { min-height: 100vh; }` (e.g. to
 `80vh`).
 
+Sections that manage their own spacing don't use these classes — the release
+block (`.artist-release`, `4rem`), the info split (`.info-split`) and the "WE
+ARE" band each carry their own padding, listed in `css/style.css` beside their
+layout rules.
+
 **b) A single block inside a section** (desktop) gets its height from how many
 grid **rows** its `--gd` spans. `--gd` is `row-start / col-start / row-end /
 col-end`; a bigger gap between row-start and row-end = taller. One row is
@@ -604,208 +604,77 @@ width of the page. It's one class in the markup:
 - **To round another section**, just add `rounded-section` to it. To square this
   one off again, remove the class.
 
-### 1.13c Artist-page release layout — alignment, hover area, the button
+### 1.13c Artist-page release layout
 
-The release block on an artist page is a two-column layout built on the 24-column
-`.fgrid`: **text on the left**, **cover on the right**. Nothing about that layout
-is automatic — each block is placed by hand with its own `--gd`
-(`row-start / col-start / row-end / col-end`), so the three rules below are what
-keep it looking right. Get one wrong and the symptoms are exactly the ones that
-have bitten this page before.
-
-#### The anatomy
+**There are no numbers to work out here.** The release block is a plain
+two-column layout — text on the left, cover on the right — and the text simply
+flows down the page. Editing the copy never means recalculating anything.
 
 ```html
-<section class="page-section theme-white section-height--medium">
-  <div class="fgrid">
-    <div class="blk release-cover" style="--gd: 5/15/24/26;">   <!-- cover, right -->
-      <img src="/assets/cover.jpg" alt="…">
-    </div>
-    <div class="blk" style="--gd: 5/2/10/13;">                  <!-- title, left -->
-      <h2 class="release-title">the title</h2>
-    </div>
-    <div class="blk release-desc" style="--gd: 10/2/16/13;">    <!-- blurb -->
-      <p>…</p>
-    </div>
-    <div class="blk" style="--gd: 16/2/18/8;">                  <!-- button -->
-      <a class="btn" href="…">LISTEN/BUY</a>
-    </div>
+<section class="page-section theme-white artist-release">
+
+  <div class="release-cover clip-diamond">
+    <img src="/assets/cover.jpg" alt="…">
   </div>
+
+  <div class="release-text">
+    <h2 class="release-title">The Title</h2>
+    <div class="release-desc">
+      <p>The blurb…</p>
+    </div>
+    <a class="btn" href="…" target="_blank" rel="noopener">LISTEN/BUY</a>
+  </div>
+
 </section>
 ```
 
-Columns: the text column runs **2 → 13**, the cover **15 → 26** (column 14 is the
-gap between them). Those rarely need changing.
+To edit a release you change four things and nothing else: the `<img src>`, the
+title, the blurb, and the button's `href`. Longer title, shorter blurb, an extra
+paragraph — the block just grows or shrinks to fit.
 
-#### Rule 1 — the cover's row-start must equal the title's row-start
+**What used to be manual, and is now automatic:**
 
-**This is the one that matters.** Above, both are `5`. Because the two blocks are
-placed independently, any difference is a permanent vertical offset:
+- **The cover lines up with the title.** `align-items: start` on the section
+  top-aligns both columns, whatever their content. (Previously the cover's
+  row-start had to be typed to match the title's, and a mismatch left the artwork
+  floating above the text.)
+- **The block is as tall as its content.** No row spans to allocate, so a long
+  description can't overflow its allowance and a short one can't leave a hole.
+- **The cover's hover area matches the artwork.** `align-items: start` also makes
+  the cover block hug its image, instead of stretching down the section with an
+  invisible tail that triggered the hover.
+- **The button can't wrap.** `.btn` is `white-space: nowrap`, so `LISTEN/BUY`
+  stays on one line regardless of the column width — no need to reserve columns
+  for it.
 
-```
---gd: 3/15/24/26   ← cover starts row 3
---gd: 5/2/10/13    ← title starts row 5     → cover floats ~2 rows above the text
-```
-
-Grid rows have a **set minimum height** (`--row-h`, derived from the window
-width) and only grow past it if the content in them needs more — they are *not* a
-share of the content. Rows 3–4 there hold nothing, so they stay at that minimum,
-and the offset is the same on every page regardless of how long the blurb is. It
-simply *reads* worse next to a tall text column, which is why a long description
-made it obvious while a one-line blurb hid it.
-
-So: **when you change a title's row-start, change the cover's to match.** If you
-restack the left column (e.g. a longer blurb pushes the button down), only the
-row-*ends* below it need adjusting — the shared row-start stays put.
-
-Note the cover aligns to the top of the title's *box*. `.release-title` uses a
-tight `line-height: 1.12em` so that box hugs the letterforms; if you loosen the
-leading, the artwork will start to look high again.
-
-#### Rule 2 — the cover block hugs its image (`align-self: start`)
-
-A `.blk` normally **stretches** to fill its whole grid area. The cover's area is
-tall (rows 5→24) but the image is only as tall as its aspect ratio, so the block
-would keep a tall invisible tail underneath — and since the hover lives on the
-block, **hovering that empty space below the artwork triggered the grow**.
-
-`.release-cover { align-self: start; }` in `css/style.css` fixes it: the block
-shrinks to the image, so the hover target is exactly the artwork you can see.
-Don't override `align-self` on a cover, and keep the hover on `.release-cover`
-rather than the `<a>` — covers without a link (a "coming soon" release) still
-need to respond.
-
-The cover's **row-end** no longer controls its height (the image does), but it
-still counts toward the section's total height — keep it roughly where the
-artwork ends so the section doesn't collapse or leave a big gap.
-
-#### Rule 3 — the button never wraps
-
-`.btn` is `white-space: nowrap`, so a label like `LISTEN/BUY` always stays on one
-line instead of breaking into `LISTEN/` + `BUY`. Because the button is
-`inline-block` it sizes to its text, so give its block enough columns or it will
-spill past its area:
-
-- `--gd: 16/2/18/8` (6 columns) fits `LISTEN/BUY` comfortably.
-- 4 columns is too narrow — that's what caused the wrap originally.
-- A longer label (`PRE-ORDER NOW`) needs a wider end column still.
-
-Spilling isn't fatal — the space to the right is empty — but widening the area is
-tidier.
-
-#### On mobile
-
-Below 768px every `--gd` is ignored and blocks stack full-width **in document
-order**. Since the cover is authored first, mobile shows: cover → title → blurb →
-button. If you'd rather the artwork sat below the text on phones, move the
-`.release-cover` div after the other three in the HTML — desktop is unaffected,
-because there the grid areas place everything regardless of source order.
-
-#### Reading and calculating the `--gd` numbers
-
-Every `.blk` is positioned by one custom property:
-
-```html
-<div class="blk release-desc" style="--gd: 10/2/16/13;">
-                                    │  │  │  └── column-end line
-                                    │  │  └───── row-end line
-                                    │  └──────── column-start line
-                                    └─────────── row-start line
-```
-
-It feeds straight into CSS `grid-area`, so the order is **row-start /
-column-start / row-end / column-end**. All four are **grid line numbers, not
-counts**, and the end lines are **exclusive** — `10 … 16` occupies rows 10, 11,
-12, 13, 14 and 15: six rows, `16 − 10`.
-
-**The columns (fixed, 27 lines).** The grid is a gutter, 24 content columns, and
-another gutter:
-
-| Line | Where it is |
-| ---- | ----------- |
-| 1  | far left edge of the screen |
-| 2  | start of the content area — **the site's normal left margin** |
-| 13 | just under halfway (where the release text column ends) |
-| 15 | where the cover starts |
-| 26 | end of the content area — the normal right margin |
-| 27 | far right edge of the screen (**use this to bleed an image off-page**) |
-
-So `2 → 13` is the left text column, `15 → 26` is the cover, and column 14 is the
-empty channel between them. Those numbers are shared by every release block on
-the site — you rarely need to touch them. Column-start **2** is what lines the
-release text up with headings on every other page.
-
-**The rows (as many as you need).** Rows aren't declared anywhere; they're
-created on demand. Each is:
+**The two values you *can* change** are the columns each side occupies, in
+`css/style.css` (they apply to every release page at once):
 
 ```css
-grid-auto-rows: minmax(var(--row-h), auto);
---row-h: calc(min(1500px, 100vw - var(--gutter) * 2) * 0.0215);
+.release-text  { grid-column: 2 / 13; }   /* left column  */
+.release-cover { grid-column: 15 / 26; }  /* right column */
 ```
 
-Two consequences worth understanding:
+See §2 for what those column numbers mean. Column 14 is the empty channel
+between the two; `2` is the site's normal left margin.
 
-- A row is **at least `--row-h`** — roughly **25px** at a 1280px window, **32px**
-  at 1920px — plus the 11px `gap` between rows. Call one **row step ≈ 36–43px**.
-- `auto` is the maximum, so a row **grows if its content needs more**. You cannot
-  clip text by under-allocating rows; the row simply expands and everything below
-  it moves down. The row numbers set the *intended* rhythm, and content wins when
-  it disagrees.
+**Spacing inside the text column** is two margins, also in `css/style.css`:
+`.release-text .release-desc` (title → blurb) and `.release-text .btn`
+(blurb → button).
 
-**A rule of thumb that works.** Because a line of body copy (~37px) is almost
-exactly one row step:
-
-> **1 row ≈ 1 line of blurb. 1 line of release title ≈ 2.5 rows.**
-
-Check it against the two live pages:
-
-| Block | Hernández | Yslas |
-| ----- | --------- | ----- |
-| Title | 2 lines → `5/2/10/13` = **5 rows** | 1 line → `5/2/8/13` = **3 rows** |
-| Blurb | ~6 lines → `10/2/16/13` = **6 rows** | 1 line → `8/2/10/13` = **2 rows** |
-| Button | `16/2/18/8` = **2 rows** | `10/2/12/8` = **2 rows** |
-
-**How to calculate a new release's rows.** Work down the left column, each block
-starting where the last one ended:
-
-1. **Title** — count how many lines it will wrap to in the half-width column
-   (roughly 18–20 characters per line at full size). Rows = lines × 2.5, rounded
-   up. Start it at row **5**.
-   *"East End Echoes Vol. 1"* → 2 lines → 5 rows → `5/2/10/13`.
-2. **Blurb** — estimate its lines (~45–50 characters per line). Rows ≈ that
-   number. Start where the title ended.
-   ~6 lines → `10/2/16/13`.
-3. **Button** — always **2 rows**, starting where the blurb ended, and **6
-   columns** wide so the label can't wrap: `16/2/18/8`.
-4. **Cover** — row-start **must equal the title's** (5). For row-end, give it
-   roughly the height of the whole text column, so the section doesn't end
-   awkwardly above or below the artwork: `5/15/24/26`. The cover's real height
-   comes from the image, not this number (Rule 2), so it's a soft value — adjust
-   it if the section has too much or too little space under the cover.
-
-**The only hard constraint** is that the left-column blocks must not overlap:
-each block's **row-end must equal the next block's row-start**. Equal = flush,
-which is what you want. Larger would leave a deliberate gap; smaller means two
-blocks claim the same rows and they'll collide.
-
-**When in doubt, just adjust and look.** Because rows auto-grow, being a row or
-two out is a spacing imperfection, not a broken layout. Nudge the numbers, keep
-the chain flush, and keep the cover's row-start matched to the title's.
+**On mobile** (<768px) the columns collapse and the section becomes normal block
+flow, so the order is the markup order: **cover, then title → blurb → button**.
+To put the artwork below the text instead, move the `.release-cover` div after
+`.release-text` in the HTML; desktop is unaffected, since the grid places both by
+column regardless of source order.
 
 #### Checklist when adding or editing a release
 
-1. Cover row-start **==** title row-start.
-2. Left-column blocks chain flush: each row-end **==** the next row-start.
-3. Row counts roughly match the content (1 row per blurb line, 2.5 per title
-   line) — see the calculation guide above.
-4. Cover row-end roughly where the artwork ends.
-5. Button block 2 rows tall and 6 columns wide (`…/2/…/8`) so its label can't
-   wrap.
-6. Swap `<img src>`, title, blurb, and the `.btn` href. The title renders exactly
-   as typed — capitalise it however you like.
+1. Swap the `<img src>`, title, blurb and the `.btn` href.
+2. That's it.
 
-(Adding a *second* release = copying the whole `<section>`: §1.1.3.)
-
+The title renders exactly as typed — capitalise it however you like (§1.1.3).
+Adding a *second* release means copying the whole `<section>`: §1.1.3.
 ### 1.14 Writing HTML here — a mini style guide
 
 The site is plain HTML/CSS; a few conventions keep it consistent:
@@ -1103,20 +972,45 @@ PNG from a raster source: drop the new mark at `assets/logo-red.png` and run
 `python tools/make-favicon.py` (needs Pillow). Every page links it the same way,
 root-absolute (`/assets/favicon.svg`), including `404.html`.
 
-**The grid.** The original Squarespace "fluid engine" laid blocks on a
-24-column grid; the rebuild keeps those exact placements. A section's content
-is a `.fgrid` (24 columns + a gutter column each side, 11 px gaps, row height
-~2.15% of the container). Each `.blk` child carries its desktop placement in
-an inline custom property:
+**The grid, and what `--gd`'s four numbers mean.** The original Squarespace
+"fluid engine" laid blocks on a 24-column grid, and the rebuild keeps those
+placements. A section's content is a `.fgrid` (24 columns plus a gutter column
+each side, 11px gaps), and each `.blk` inside it is positioned by one inline
+value:
 
 ```html
-<div class="blk" style="--gd: 10/8/26/20;">   <!-- rows 10–26, cols 8–20 -->
+<div class="blk" style="--gd: 10/8/26/20;">
 ```
 
-The four numbers are `row-start / col-start / row-end / col-end`, columns
-1–27 (1 and 27 are the gutters, so content lives in 2–26). **On mobile
-(<768 px) the grid areas are ignored** and blocks simply stack full-width in
-document order — so keep the HTML in reading order.
+Read plainly, **that block starts on row 10, starts on column 8, stops before
+row 26, and stops before column 20** — so it covers rows 10–25 and columns 8–19.
+In order:
+
+| Position | Example | Means |
+| -------- | ------- | ----- |
+| 1st | `10` | **top edge** — which row it starts on |
+| 2nd | `8`  | **left edge** — which column it starts on |
+| 3rd | `26` | **bottom edge** — the row it stops *before* |
+| 4th | `20` | **right edge** — the column it stops *before* |
+
+So it's **top / left / bottom / right**, and the last two are where the block
+*ends*, not how far it spans. Subtract to get the size: `26 − 10` = 16 rows tall,
+`20 − 8` = 12 columns wide.
+
+**Columns** run 1–27. Column line 2 is the site's normal left margin and 26 the
+right one; 1 and 27 are the outer gutters, so using **27** on the right (or 1 on
+the left) bleeds a block off the edge of the screen. **Rows** aren't fixed
+slots — each is at least ~2.15% of the container tall and **grows if its content
+needs more room**, so text can't be clipped by giving a block too few rows; the
+row just expands and pushes what's below it down.
+
+**On mobile (<768px) the grid areas are ignored entirely** and blocks stack
+full-width in document order — so keep the HTML in reading order.
+
+Newer sections skip this system altogether and use ordinary flowing layouts
+(the artist release block §1.13c, the info page §1.17, the "WE ARE" band). Those
+have no `--gd` at all and size themselves to their content — preferred for
+anything new.
 
 **Header, mobile menu, and footer are injected by `js/site.js`** into empty
 shells on each page (see §1.9), so the nav/footer live in one place. Pages
@@ -1272,6 +1166,28 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — releases lay themselves out; "WE ARE" scales
+
+- **The release block no longer uses grid-row numbers at all.** It's now a plain
+  two-column layout (`.artist-release`): the text flows (title → blurb → button)
+  and `align-items: start` top-aligns the cover with the title by itself. Editing
+  a release is now *only* editing content — no measuring, no calculating, no
+  keeping row-starts in sync.
+
+  This removed every `--gd` from both artist pages' release sections, and with
+  them three former manual rules: matching the cover's row-start to the title's,
+  allocating enough rows for the blurb, and reserving columns so the button
+  couldn't wrap. All three are now structural.
+- **"WE ARE A bespoke micro Label" scales with the window** —
+  `clamp(1.6rem, 5.4vw, var(--h2-size))`, reaching full size around 1520px and
+  shrinking below it, so it no longer overwhelms smaller desktops. Mobile
+  unchanged.
+- §1.13c rewritten (it's now short: there's nothing to calculate). §2 gained a
+  plain-language explanation of what `--gd`'s four numbers mean — **top / left /
+  bottom / right**, with the last two being where the block *ends* rather than
+  how far it spans — since the home page, newsletter and artist bios still use
+  it. §1.1.3 and §1.11 updated to match.
 
 ### 2026-07-19 — release titles render as typed + `--gd` guide
 
