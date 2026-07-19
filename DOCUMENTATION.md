@@ -381,11 +381,12 @@ form): add your access key as a hidden input, point the `fetch()` in
 1. Create `newpage.html` **in the root folder** (copy `info.html` for the
    scaffold — the empty `<header>`/`<footer>` shells and the `<script>` tag —
    and gut the `<main>`). Only artist pages live in a subfolder; everything
-   else is a root-level `.html` file.
+   else is a root-level `.html` file. It will be served at **`/newpage`**.
 2. Build sections as `<section class="page-section theme-...">` containing a
    `.fgrid` with `.blk` children (see §2 for the grid).
-3. Link it from the nav by adding a line to `NAV_LINKS` in `js/site.js` — that
-   updates the header and mobile menu on **every** page at once (see §1.9).
+3. Link it from the nav by adding a line to `NAV_LINKS` in `js/site.js` — use
+   the clean slug, `['New page', '/newpage']` (no `.html`, leading `/`; §4.1).
+   That updates the header and mobile menu on **every** page at once (§1.9).
 
 ### 1.9 The header, footer, and nav are one-edit (js/site.js)
 
@@ -579,11 +580,12 @@ width of the page. It's one class in the markup:
 
 The site is plain HTML/CSS; a few conventions keep it consistent:
 
-- **Links are relative and point at real files** — `href="info.html"`,
-  `href="artists/yslas.html"`; from inside `artists/`, go up first:
-  `href="../info.html"`. There are no clean slugs (see §4). Use `mailto:` for
-  email and full `https://…` for off-site, always with
-  `target="_blank" rel="noopener"` for external links.
+- **Links are clean slugs starting with `/`** — `href="/info"`,
+  `href="/artists/yslas"`, `href="/"` for home. No `.html`, no `../`; the same
+  path works from every page (see §4.1). Asset paths follow the same rule:
+  `src="/assets/…"`, `href="/css/style.css"`. Use `mailto:` for email and full
+  `https://…` for off-site, always with `target="_blank" rel="noopener"` for
+  external links.
 - **Section skeleton** — a page's content is a stack of
   `<section class="page-section theme-…">`, each containing a `.fgrid`, each
   holding `.blk` children placed with `--gd` (§2). Reuse an existing section as
@@ -778,8 +780,8 @@ is the fallback for those that don't. Both are the red glyph on a transparent
 background, so it reads on light and dark browser chrome alike. **To change it**,
 replace `assets/favicon.svg` (any single-colour SVG works) and regenerate the
 PNG from a raster source: drop the new mark at `assets/logo-red.png` and run
-`python tools/make-favicon.py` (needs Pillow). Paths are relative on normal
-pages and `../` on artist pages; `404.html` uses root-absolute `/assets/…`.
+`python tools/make-favicon.py` (needs Pillow). Every page links it the same way,
+root-absolute (`/assets/favicon.svg`), including `404.html`.
 
 **The grid.** The original Squarespace "fluid engine" laid blocks on a
 24-column grid; the rebuild keeps those exact placements. A section's content
@@ -837,50 +839,100 @@ Settings → Pages → deploy from branch. Already in place:
 `_headers` (security headers/CSP) and `_redirects` (/merch, /cart) only take
 effect there, and the newsletter form gets stored by Netlify Forms.
 
-**Local preview**: because every path is relative, double-clicking
-`index.html` works. A local server is still closer to production:
+**Local preview.** Now that links are clean slugs served from the domain root,
+you need a local server that (a) serves the folder at `/` and (b) resolves
+`/info` to `info.html`. Double-clicking `index.html` no longer works — `file://`
+can't resolve a path starting with `/`, so the CSS won't load.
+
+Use a server with "pretty URL" support:
 
 ```
 cd alkabil-clone
-python -m http.server 8000
-# → http://localhost:8000
+npx serve .                 # → http://localhost:3000   (clean URLs work)
 ```
+
+or, if you have the Netlify CLI, `netlify dev` — closest to production, and it
+also exercises `_headers` / `_redirects`.
+
+⚠️ **`python -m http.server` won't work for navigation.** It serves files
+verbatim and never appends `.html`, so the home page loads but every nav link
+404s. It's fine for eyeballing one page, not for clicking around.
 
 ---
 
 ## 4. Links and URLs
 
-**No clean slugs yet** — every link points at its `.html` file:
+**Clean slugs — no `.html` anywhere.** The URLs match the old Squarespace site
+exactly:
 
-| Old (Squarespace)        | Here                            |
-| ------------------------ | ------------------------------- |
-| `/`                      | `index.html`                    |
-| `/artists`               | `artists.html`                  |
-| `/artists/yslas`         | `artists/yslas.html`            |
-| `/artists/jehernandez`   | `artists/jehernandez.html`      |
-| `/info`                  | `info.html`                     |
-| `/merch`                 | `merch.html` → Bandcamp (§1.10) |
+| File on disk               | URL visitors see          |
+| -------------------------- | ------------------------- |
+| `index.html`               | `/`                       |
+| `artists.html`             | `/artists`                |
+| `artists/yslas.html`       | `/artists/yslas`          |
+| `artists/jehernandez.html` | `/artists/jehernandez`    |
+| `info.html`                | `/info`                   |
+| `merch.html`               | `/merch` → Bandcamp (§1.10) |
+| `404.html`                 | any unknown URL           |
 
-All internal links are **relative**: root pages use `info.html`,
-`artists/yslas.html`; artist pages use `../info.html` and plain filenames
-for siblings (`jehernandez.html`). No link or asset path starts with `/` —
-that's what lets the site run from any base (project page, custom domain,
-subfolder, `file://`).
+This works with **no build step and no config**: GitHub Pages and Netlify both
+serve `x.html` when asked for `/x`. You keep authoring plain `.html` files; only
+the links drop the extension.
 
-If clean URLs matter later (to match the old Squarespace paths exactly):
-GitHub Pages and Netlify both serve `x.html` at `/x`, so the move is simply
-rewriting internal links from `x.html` to `/x` — but that reintroduces the
-served-at-root requirement, so do it only once the site lives at
-`alkabil.audio` proper.
+### 4.1 The rule when you write a link
+
+**Every internal link and asset path starts with `/`** — root-absolute, never
+relative:
+
+```html
+<a href="/info">Info</a>                     <!-- ✅ -->
+<a href="/artists/yslas">Yslas</a>           <!-- ✅ -->
+<link rel="stylesheet" href="/css/style.css"><!-- ✅ -->
+<img src="/assets/cover.jpg">                <!-- ✅ -->
+
+<a href="info.html">Info</a>                 <!-- ❌ old style -->
+<a href="../info">Info</a>                   <!-- ❌ don't use ../ -->
+```
+
+Why root-absolute: a page at `/artists/yslas` sits one level "deep" as far as
+the browser is concerned, so a relative `info` would resolve to
+`/artists/info`. Starting from `/` makes every path mean the same thing on every
+page — which is also why `js/site.js` no longer has any depth-prefix logic
+(the old `BASE` / `url()` helper is gone).
+
+Links in the injected chrome live in `NAV_LINKS` / `FOOTER_*` in `js/site.js`
+and follow the same rule; artist links are built as `/artists/<id>` straight
+from the registry, and the home link is simply `/`.
+
+**One exception, on purpose:** the `@font-face` URLs in `css/style.css` stay
+relative (`../assets/fonts/…`). Paths inside a stylesheet resolve against *the
+stylesheet's* location, not the page's, so they're already depth-proof.
+
+### 4.2 The one requirement — serve from a domain root
+
+Clean slugs assume the site is at the root of its domain (`alkabil.audio/`, or
+`user.github.io/` for a user page). They will **not** work from a subfolder — a
+GitHub *project* page like `user.github.io/alkabil/`, where `/css/style.css`
+would resolve to the wrong place and every page would load unstyled.
+
+So: use the custom domain (or a user/organisation page). If you ever do need to
+host it under a subpath, the fix is to make the paths relative again and put the
+`.html` extensions back on the links.
 
 ---
 
 ## 5. Troubleshooting
 
 - **Plain unstyled text and a giant Instagram icon** — the stylesheet didn't
-  load. In this rebuild all paths are relative, so this shouldn't happen
-  from any location; if you reintroduce root-absolute paths (`/css/...`),
-  they only resolve when the site is served at a domain root.
+  load. Paths are root-absolute (`/css/style.css`), which only resolve when the
+  site is served from a **domain root** — so this is the classic symptom of
+  hosting it in a subfolder (a GitHub *project* page) or opening it via
+  `file://`. See §4.2.
+- **Every nav link 404s locally, but the home page looks fine** — your local
+  server doesn't do clean URLs. `python -m http.server` never appends `.html`;
+  use `npx serve .` or `netlify dev` instead (§3).
+- **A link 404s on the live site** — check it starts with `/` and has no
+  `.html`: `/artists/yslas`, not `artists/yslas.html` (§4.1).
 - **Fonts look like a plain serif (Georgia)** — the Academico woff2 files
   didn't load; check `assets/fonts/` made it into the deploy.
 - **A block sits in the wrong place on desktop** — check its `--gd` values;
@@ -900,6 +952,24 @@ served-at-root requirement, so do it only once the site lives at
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-18 — clean slugs (deploy prep)
+
+- **All internal links are now clean, root-absolute slugs** — `/info`,
+  `/artists/yslas`, `/` for home. No `.html` in any `href`, anywhere.
+- Every asset path went root-absolute too (`/css/style.css`, `/js/site.js`,
+  `/assets/…`) so paths mean the same thing at any URL depth. The `@font-face`
+  URLs in the stylesheet stay relative on purpose — they resolve against the
+  stylesheet, not the page.
+- `js/site.js` lost its depth machinery entirely: the `BASE` constant and the
+  `url()` prefix helper are gone. `NAV_LINKS` now hold slugs, artist links are
+  built as `/artists/<id>`, and the registry's `img` paths are root-absolute.
+- **New requirement:** the site must be served from a domain root
+  (`alkabil.audio/`), not a GitHub *project* subpath — see §4.2. And local
+  preview now needs a pretty-URL server (`npx serve .` / `netlify dev`);
+  `python -m http.server` and `file://` no longer work for navigation (§3).
+- Docs: §4 rewritten (URL table, the link rule, the root requirement), §3 local
+  preview, §1.8, §1.14 style guide, and troubleshooting entries updated.
 
 ### 2026-07-18 — scroll fade on all pages, cover shadow/hover, rounded section
 
