@@ -25,15 +25,15 @@
            image that slide with the pointer. The section-bg above is the
            fallback when JS is off or reduced-motion is set. -->
       <div class="hero-parallax" data-img="/assets/alkabil-web-1.jpg" aria-hidden="true"></div>
-      <div class="fgrid">
-        <div class="blk hero-logo" style="--gd: 1/2/5/6;">
+      <!-- logo left, wordmark + tagline right; parked at the bottom of the
+           screen by .section-height--large. No coordinates to maintain. -->
+      <div class="hero-inner">
+        <div class="hero-logo">
           <img src="/assets/logo-white.png" alt="ALKABIL logo">
         </div>
-        <div class="blk hero-title" style="--gd: 1/13/4/26;">
-          <h2>ALKABIL.audio</h2>
-        </div>
-        <div class="blk hero-tagline" style="--gd: 4/20/6/26;">
-          <p>SD&nbsp;-&nbsp;HTX&nbsp;-&nbsp;VSA&nbsp;-&nbsp;CDMX</p>
+        <div class="hero-copy">
+          <div class="hero-title"><h2>ALKABIL.audio</h2></div>
+          <div class="hero-tagline"><p>SD&nbsp;-&nbsp;HTX&nbsp;-&nbsp;VSA&nbsp;-&nbsp;CDMX</p></div>
         </div>
       </div>
     </section>
@@ -46,7 +46,7 @@
       </div>
     </section>
 
-    <!-- We are (full-bleed, not the fgrid) -->
+    <!-- We are (full-bleed band) -->
     <section class="page-section theme-bright">
       <div class="we-are">
         <h2>WE ARE A bespoke micro Label - we&rsquo;re into:</h2>
@@ -57,22 +57,24 @@
 
     <!-- Newest release. `rounded-section` curves the corners (radius:
          --section-radius in css/style.css); it still spans the full width. -->
-    <section class="page-section theme-black section-height--medium rounded-section">
+    <section class="page-section theme-black rounded-section">
       <div class="section-bg"><img src="/assets/alkabil-web-5.jpg" alt=""></div>
       <!-- animated film-grain / static over the background image -->
       <div class="grain" aria-hidden="true"></div>
-      <div class="fgrid">
-        <div class="blk marquee" style="--gd: 1/1/5/27;" aria-label="NEWEST">
+      <!-- marquee, cover, marquee — a centred stack, no coordinates. Swap the
+           cover by changing the <img src> and the link. -->
+      <div class="newest-inner">
+        <div class="marquee" aria-label="NEWEST">
           <div class="track" aria-hidden="true">
             <span>NEWEST&nbsp;///</span><span>NEWEST&nbsp;///</span><span>NEWEST&nbsp;///</span>
           </div>
         </div>
-        <div class="blk release-cover" style="--gd: 5/8/21/20;">
+        <div class="release-cover">
           <a href="https://tr.ee/vqnrRS0OUF" target="_blank" rel="noopener">
             <img src="/assets/cover-2kx2k.jpg" alt="Newest release cover">
           </a>
         </div>
-        <div class="blk marquee reverse" style="--gd: 21/1/25/27;" aria-label="release">
+        <div class="marquee reverse" aria-label="release">
           <div class="track" aria-hidden="true">
             <span>release&nbsp;\\\</span><span>release&nbsp;\\\</span><span>release&nbsp;\\\</span>
           </div>
