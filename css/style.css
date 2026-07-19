@@ -648,17 +648,56 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 
 .big-q { font-size: calc(var(--h1-size) * 1.4); line-height: 1; }
 
-/* The two info-page photos render at IDENTICAL size. Two halves to that:
-   (1) their blocks use the same grid-area width in info.html (`--gd` cols
-   14/27 — which also bleeds into the right gutter), and (2) this shared 3:2
-   box. The source files differ slightly (3:2 vs ~1.57:1), so object-fit crops
-   the difference instead of letting one come out taller. Stays fully fluid:
-   the width follows the grid cell, the height follows from aspect-ratio — on
-   mobile both go full-width and still match. */
-.info-img img {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
+/* ---------------- Info page: the text/photos split ----------------
+   One section, two columns: all the text on the left, the two photos stacked
+   flush on the right. The row's height comes from the TEXT column, the photo
+   column stretches to match it, and each photo fills half of that height with
+   object-fit: cover — so the pair always touches, always ends level with the
+   text, and simply crops harder as the column narrows ("fit to area"). It also
+   re-matches itself when a FAQ item opens and the text grows. See §1.17. */
+
+/* this section has no .fgrid, so it carries its own bottom breathing room
+   (the top padding is the fixed-header allowance, set inline in info.html) */
+.info-split { padding-bottom: 6rem; }
+
+.info-text { padding: 0 var(--gutter); }         /* mobile inset; desktop uses the grid */
+.info-text .big-q { text-align: center; margin-top: 3rem; }   /* the ? is centred… */
+.info-intro { margin-top: 2rem; }                /* …everything else shares one left edge */
+.info-answers { margin-top: 6.5rem; }            /* the breath before SOME ANSWERS */
+.info-text .faq { margin-top: 2.5rem; }
+
+/* gap:0 is the point — the two photos butt together as one strip */
+.info-photos {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  min-height: 0;
+}
+.info-photos img { display: block; width: 100%; height: auto; }
+
+@media (min-width: 768px) {
+  /* same column template as .fgrid, so the text lines up with the rest of the
+     site and the photos can bleed through the right gutter to the screen edge */
+  .info-split {
+    display: grid;
+    grid-template-columns:
+      minmax(var(--gutter), 1fr)
+      repeat(24, minmax(0, calc((var(--site-max-width) - (var(--gap) * 23)) / 24)))
+      minmax(var(--gutter), 1fr);
+    column-gap: var(--gap);
+    align-items: stretch;          /* photo column matches the text column's height */
+  }
+  .info-text   { grid-column: 2 / 13; padding: 0; }
+  .info-photos {
+    grid-column: 14 / -1;          /* through the right gutter = full bleed */
+    grid-template-rows: 1fr 1fr;   /* two equal halves */
+    min-height: 0;                 /* lets the TEXT drive the height, not the images */
+  }
+  .info-photos img {
+    height: 100%;
+    min-height: 0;
+    object-fit: cover;             /* fill the half, crop the overflow */
+  }
 }
 
 .faq details {
