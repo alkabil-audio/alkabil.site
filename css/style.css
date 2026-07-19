@@ -505,7 +505,10 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
    (with gutter margins so the text isn't edge-to-edge). It's a plain padded
    block, not the fgrid. */
 .we-are { padding: 4.5rem var(--gutter); }
-.we-are h2 { font-size: var(--h2-size); }
+/* Scales with the window instead of sitting at full size all the way down: it
+   reaches the normal h2 size around 1520px and shrinks below that, so it stops
+   overwhelming smaller desktops. (Mobile is handled separately, further down.) */
+.we-are h2 { font-size: clamp(1.6rem, 5.4vw, var(--h2-size)); }
 .we-are .word-list { margin-top: 0.5em; }
 .we-are-contact { margin-top: 2.5rem; }
 @media (max-width: 767px) {
@@ -536,6 +539,38 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 @media (prefers-reduced-motion: reduce) {
   .release-cover img { transition: none; }
   .release-cover:hover img { transform: none; }
+}
+
+/* ---------------- Artist page: the release block ----------------
+   Text left, cover right — and NO grid-row numbers to work out. The text just
+   flows (title → blurb → button), so the block is however tall its content needs
+   and editing the copy never means recalculating a layout. Two things fall out
+   of `align-items: start`: the cover top-aligns with the title automatically
+   (however long the title or blurb is), and the cover block hugs its image, so
+   its hover area matches the artwork instead of trailing below it. */
+.artist-release { padding: 4rem 0; }
+.release-text .release-desc { margin-top: 1.4rem; }
+.release-text .btn { margin-top: 2rem; }
+
+@media (max-width: 767px) {
+  .artist-release { padding: 2.5rem var(--gutter); }
+  .release-text { margin-top: 2rem; }      /* cover sits above the text on phones */
+}
+
+@media (min-width: 768px) {
+  /* same column template as .fgrid so the text lines up with the bio above */
+  .artist-release {
+    display: grid;
+    grid-template-columns:
+      minmax(var(--gutter), 1fr)
+      repeat(24, minmax(0, calc((var(--site-max-width) - (var(--gap) * 23)) / 24)))
+      minmax(var(--gutter), 1fr);
+    column-gap: var(--gap);
+    align-items: start;
+  }
+  /* the only positioning left: which columns each side occupies */
+  .release-text  { grid-column: 2 / 13; grid-row: 1; }
+  .release-cover { grid-column: 15 / 26; grid-row: 1; }
 }
 
 /* Release cover shown through a tilted-square "window" — a 45°-rotated square,
@@ -613,7 +648,7 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
    h1–h4 rule forces uppercase — so leaving this out would SHOUT the title rather
    than render it as typed. Casing is controlled in the HTML. */
 .release-title { text-transform: none; line-height: 1.12em; }
-.release-desc p { margin-top: 1em; }
+.release-desc p + p { margin-top: 1em; }   /* spacing BETWEEN paragraphs only */
 .release-desc em { font-style: italic; }
 
 /* Prev / Next bar — both ends filled by js/site.js from the ARTISTS order.
