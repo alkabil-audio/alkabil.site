@@ -60,19 +60,24 @@ function linkHTML(label, dest) {
 }
 
 /* ============ HEADER SCROLL STATE ============
-   The header bar is transparent at the top of the page and its faint red tint
+   The header bar is transparent at the top of EVERY page and its faint red tint
    fades in once scrolled past HEADER_SHOW_AFTER, fading back out on return to
    the very top (the CSS transition does the fading; this only toggles the
    class).
 
-   Exception: only pages that OPEN on the dark hero can carry white nav text on a
-   transparent bar. Every other page (info, artists, artist pages) begins on a
-   white section, so they keep the tinted bar permanently — otherwise the nav
-   would be white-on-white and invisible. The dark hero is detected by the
-   presence of `.hero-title`. */
+   The nav's colour while the bar is clear depends on what the page opens on, so
+   we check the first section's theme: a white/bright one (info, artist pages)
+   gets `.on-light`, which flips the nav to dark text until the tint arrives.
+   Pages opening on the dark hero — or on photos, like the artists grid, which
+   has no .page-section at all — keep white text with a soft shadow. Once
+   scrolled, the tinted bar carries white text everywhere. */
 const HEADER_SHOW_AFTER = 40;   // px scrolled before the bar tints in
 function wireHeaderScroll(header) {
-  if (!document.querySelector('.hero-title')) { header.classList.add('scrolled'); return; }
+  const first = document.querySelector('main .page-section');
+  if (first && (first.classList.contains('theme-white') ||
+                first.classList.contains('theme-bright'))) {
+    header.classList.add('on-light');
+  }
   const sync = () => header.classList.toggle('scrolled', window.scrollY > HEADER_SHOW_AFTER);
   sync();
   addEventListener('scroll', sync, { passive: true });
@@ -301,6 +306,46 @@ function wireNewsletter() {
   });
 }
 
+/* ============ FAQ close animation ============
+   Opening is pure CSS: the answer is only rendered once <details> is open, so a
+   keyframe plays the moment it appears (css/style.css). Closing can't work that
+   way — the browser drops the content the instant `open` is removed, so it would
+   snap shut with nothing left to animate.
+
+   So on a close click we cancel the default, keep the panel open, add `.closing`
+   to play the reverse animation, and only then set open = false. Result: the
+   same 0.34s slide in both directions. Under prefers-reduced-motion we don't
+   intervene at all and it closes instantly. */
+function wireFaq() {
+  const CLOSE_MS = 500;   // safety net > the CSS animation (0.34s)
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll('.faq details').forEach((d) => {
+    const summary = d.querySelector('summary');
+    const answer = d.querySelector('.faq-answer');
+    if (!summary || !answer) return;
+
+    summary.addEventListener('click', (e) => {
+      if (!d.open || reduced.matches) return;      // opening: CSS handles it
+      if (d.classList.contains('closing')) return; // already animating out
+      e.preventDefault();                          // hold it open while we animate
+      d.classList.add('closing');
+
+      let timer;
+      const finish = (ev) => {
+        if (ev && ev.animationName !== 'faq-hide') return;
+        clearTimeout(timer);
+        answer.removeEventListener('animationend', finish);
+        d.classList.remove('closing');
+        d.open = false;
+      };
+      answer.addEventListener('animationend', finish);
+      // if the animation never fires, close anyway rather than stick open
+      timer = setTimeout(finish, CLOSE_MS);
+    });
+  });
+}
+
 /* ============ boot ============ */
 function init() {
   document.querySelectorAll('.site-header').forEach(buildHeader);
@@ -310,6 +355,7 @@ function init() {
   buildMarquees();
   buildHeroParallax();
   wireNewsletter();
+  wireFaq();
 }
 
 if (document.readyState === 'loading') {
