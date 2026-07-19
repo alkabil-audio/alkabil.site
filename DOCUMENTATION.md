@@ -31,7 +31,7 @@ Contents:
    - [1.14 Writing HTML here — a mini style guide](#114-writing-html-here--a-mini-style-guide)
    - [1.15 The hero concentric-ring parallax](#115-the-hero-concentric-ring-parallax)
    - [1.16 The film-grain / static overlay](#116-the-film-grain--static-overlay)
-   - [1.17 Info page: matching photo sizes and the FAQ open animation](#117-info-page-matching-photo-sizes-and-the-faq-open-animation)
+   - [1.17 Info page: the text/photos split and the FAQ animation](#117-info-page-the-textphotos-split-and-the-faq-animation)
 2. **[How the site is organized](#2-how-the-site-is-organized)**
 3. **[Deploy and local preview](#3-deploy-and-local-preview)**
 4. **[Links and URLs](#4-links-and-urls)**
@@ -805,41 +805,68 @@ keyframes in `css/style.css`:
 - **Blend**: `mix-blend-mode: overlay` — try `soft-light` (gentler) or
   `screen` (brighten-only).
 
-### 1.17 Info page: matching photo sizes and the FAQ open animation
+### 1.17 Info page: the text/photos split and the FAQ animation
 
-**The two photos.** The intro photo (beside the big "?") and the FAQ photo
-(beside "SOME ANSWERS") are set up to render at exactly the same size. That
-takes two things working together — change both if you resize one:
+**The layout.** The whole info page above the newsletter is **one section**
+(`.info-split`) with two columns — all the text on the left, both photos stacked
+on the right:
 
-1. **Same width** — their blocks carry the same grid columns in `info.html`:
+```html
+<section class="page-section theme-white info-split" style="padding-top: var(--header-h);">
+  <div class="info-text">
+    <h1 class="big-q">?</h1>
+    <p class="info-intro">…</p>
+    <h2 class="info-answers">SOME ANSWERS</h2>
+    <div class="faq">…</div>
+  </div>
+  <div class="info-photos">
+    <img src="/assets/info-1.jpeg" alt="">
+    <img src="/assets/info-2.jpg" alt="">
+  </div>
+</section>
+```
 
-   ```html
-   <div class="blk info-img" style="--gd: 1/14/22/27;">   <!-- intro -->
-   <div class="blk info-img" style="--gd: 1/14/15/27;">   <!-- FAQ   -->
-   ```
+It's deliberately *not* the `.fgrid` used elsewhere, because that grid's rows are
+a **fixed** height — which is what used to make this page misbehave. The intro
+and the FAQ were two separate sections, so the space between the photos was the
+sum of one section's leftover rows plus the next one's padding: a gap that
+changed with the window and never closed. Here the row height is driven by the
+content instead.
 
-   The **column** numbers (`14` … `27`) are what set the width, and they match.
-   Note `27` is past the last content column, so both images bleed into the
-   right gutter, out to the page edge. The **row** numbers differ on purpose —
-   they only reserve vertical space in the grid (the intro section is taller),
-   not the image's size.
+**How the three rules fall out of that:**
 
-2. **Same shape** — the `info-img` class gives both a shared box in
-   `css/style.css`:
+1. **The photos always touch.** They're two children of one `.info-photos` grid
+   with `gap: 0`. There is no section boundary between them any more, so there's
+   nothing to introduce a gap.
+2. **The photos always match the text's height.** The section is a grid with
+   `align-items: stretch`, so the photo column stretches to the row height — and
+   that height comes from the text column. `.info-photos` has
+   `grid-template-rows: 1fr 1fr` (each photo takes half) and `min-height: 0`,
+   which is the important bit: without it the images' natural heights would push
+   the row taller instead of the text deciding it.
+3. **The photos crop rather than distort.** Each `img` is
+   `height: 100%; object-fit: cover`. Narrow the window and the column gets
+   taller and thinner, so they simply crop in further — a "fit to area" window.
+   It also re-matches live when a FAQ item opens and the text column grows.
 
-   ```css
-   .info-img img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
-   ```
+**Column widths** use the same template as `.fgrid`, so the text lines up with
+the rest of the site: `.info-text` sits at `grid-column: 2 / 13` (the same
+columns "SOME ANSWERS" always used) and `.info-photos` at `14 / -1` — `-1` runs
+through the right gutter so the photos bleed to the screen edge. Change those two
+values to re-proportion the split.
 
-   The source files aren't quite the same shape (3:2 vs ~1.57:1), so
-   `object-fit: cover` crops the difference rather than letting one render
-   taller. To change the proportions of both, edit `aspect-ratio` (e.g. `4/3`
-   for a squarer photo, `16/9` for a letterbox).
+**Text alignment.** Everything in `.info-text` shares one left edge; only the `?`
+is centred (`.info-text .big-q { text-align: center }`). The vertical rhythm is
+three margins in `css/style.css` — `.big-q` (top space under the header),
+`.info-intro`, and `.info-answers` (the big breath before "SOME ANSWERS", 6.5rem).
 
-This stays fully responsive: the width follows the grid cell and the height is
-derived from it, so on mobile — where the grid areas are ignored and blocks
-stack full-width — the two still match. **To swap either photo**, just change
-the `<img src>`; any reasonably wide image works, since the box crops it.
+**On mobile** (<768px) the grid rules drop away: the section becomes a plain
+block, `.info-text` takes a `--gutter` inset, and the photos go full-width at
+their natural aspect ratio — still stacked with no gap between them.
+
+**To swap a photo**, change the `<img src>`. Any reasonably large landscape image
+works, since it's cropped to fill; there's no aspect ratio to keep in sync any
+more.
 
 **The FAQ open/close animation.** A question slides its answer down when opened
 and back up when closed — same 0.34s either way — while the `+` rolls into an
@@ -1086,6 +1113,29 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — info page rebuilt as one text/photos split
+
+- **The gap between the two info photos is gone.** They were in two separate
+  sections, so the space between them was one section's leftover fixed-height
+  rows plus the next one's padding — a gap that changed with the viewport and
+  never closed. The intro and FAQ are now **one section** (`.info-split`) with
+  the photos as two children of a single `gap: 0` grid, so they butt together as
+  one strip.
+- **The photos now fill the text's height.** The section stretches its photo
+  column to the row height, which the text column sets; each photo takes half
+  (`grid-template-rows: 1fr 1fr`) and fills it with `object-fit: cover`, so they
+  crop in as the column narrows instead of leaving space. `min-height: 0` is
+  what lets the text drive the height rather than the images. It re-matches live
+  when a FAQ item opens.
+- **Consistent indentation.** The `?`, the intro copy, "SOME ANSWERS" and the FAQ
+  were on three different left edges (grid columns 7, 4 and 2). They're now one
+  column (`2 / 13`, the edge "SOME ANSWERS" already used), with only the `?`
+  centred.
+- Dropped the `.info-img` shared aspect-ratio box — the fill-the-column approach
+  replaces it, so there's no ratio to keep in sync when swapping a photo.
+- §1.17 rewritten around the new layout (why it isn't the `.fgrid`, the three
+  rules, how to re-proportion the split, mobile behaviour).
 
 ### 2026-07-19 — release layout: cover alignment, hover area, button wrap
 
