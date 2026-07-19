@@ -59,10 +59,19 @@
   --header-h: 76px;   /* keep in sync with .site-header's padding + brand size */
 
   /* ALBUM-COVER WINDOW (artist pages) — the 45°-tilted square the release cover
-     is shown through. ***Set to `none` to switch the effect off site-wide.***
+     is shown through. ***Currently OFF.*** Toggle by swapping the value:
+       OFF: none
+       ON:  polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)
      Any clip-path value works: polygon(), circle(50%), ellipse(), etc.
-     See DOCUMENTATION §1.13. */
-  --cover-clip: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+     NOTE: while it's ON the cover's drop shadow is clipped away (a clip-path
+     cuts everything outside the shape). See DOCUMENTATION §1.13. */
+  --cover-clip: none;
+
+  /* Release-cover hover grow (artist pages + home newest release). 1 = no grow. */
+  --cover-hover-scale: 1.04;
+
+  /* Corner radius for sections marked `rounded-section` (home newest release). */
+  --section-radius: 28px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -107,12 +116,17 @@ img { max-width: 100%; display: block; }
 
 /* ---------------- Header ----------------
    Fixed to the top and above everything (z-index) so it persists on scroll with
-   all content passing underneath. It starts fully TRANSPARENT over the dark hero
-   and the faint red bar fades in once the page is scrolled (js/site.js adds
-   .scrolled past a threshold, and removes it back at the very top). Pages that
-   don't open on the dark hero get .scrolled permanently — otherwise the white
-   nav text would sit invisible on their white first section. Markup is injected
-   by js/site.js into the empty <header class="site-header"> shell. */
+   all content passing underneath. It starts fully TRANSPARENT and the faint red
+   bar fades in once the page is scrolled (js/site.js adds .scrolled past a
+   threshold, and removes it back at the very top). This happens on EVERY page.
+
+   The catch is nav contrast while the bar is clear, which depends on what the
+   page opens on. js/site.js reads the first section's theme and adds .on-light
+   for pages that begin on a white/bright section (info, artist pages) so the nav
+   flips to dark text there; pages opening on the dark hero or on photos
+   (artists grid) keep white text plus a soft shadow. Once .scrolled tints the
+   bar, every page is back to white text. Markup is injected by js/site.js into
+   the empty <header class="site-header"> shell. */
 
 .site-header {
   position: fixed;
@@ -124,7 +138,20 @@ img { max-width: 100%; display: block; }
   -webkit-backdrop-filter: blur(0px);
           backdrop-filter: blur(0px);
   transition: background 0.4s ease, backdrop-filter 0.4s ease,
-              -webkit-backdrop-filter 0.4s ease;
+              -webkit-backdrop-filter 0.4s ease, color 0.4s ease;
+}
+
+/* Clear bar on a page that OPENS on a light section: white-on-white would be
+   invisible, so the nav goes dark until the red tint fades in. */
+.site-header.on-light:not(.scrolled) { color: var(--black); }
+/* …unless the mobile menu is open — then the bar sits on the red overlay. */
+body.menu-open .site-header.on-light:not(.scrolled) { color: var(--white); }
+
+/* Clear bar over the hero / artist photos: a soft shadow keeps the white text
+   and icons legible over bright patches of the image behind. drop-shadow on the
+   wrapper covers the text, the SVG icon and the burger bars in one rule. */
+.site-header:not(.on-light):not(.scrolled) .header-inner {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
 }
 /* DESKTOP HEADER BAR look once scrolled — tweak here (the mobile menu overlay is
    separate, in .mobile-menu): the opacity below (0 = clear … 1 = solid) and the
@@ -258,6 +285,15 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 /* ---------------- Fluid-engine-style grid ---------------- */
 
 .page-section { position: relative; overflow: hidden; }
+
+/* Rounded full-bleed section (the home newest-release block). It still spans the
+   full width — only the corners curve, revealing the page background behind
+   them. Works because .page-section clips its contents (overflow: hidden), so
+   the background photo and the grain follow the rounding. Radius is tunable at
+   the top of this file (--section-radius); a smaller one on phones keeps the
+   curve in proportion. */
+.rounded-section { border-radius: var(--section-radius, 28px); }
+@media (max-width: 767px) { .rounded-section { border-radius: calc(var(--section-radius, 28px) * 0.6); } }
 
 .section-bg {
   position: absolute; inset: 0; z-index: 0;
@@ -475,9 +511,25 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   .we-are h2 { font-size: 1.25rem; }   /* ~half the previous mobile size */
 }
 
+/* Release covers — artist pages AND the home newest-release block. They carry a
+   soft drop shadow and grow slightly on hover. Tune --cover-hover-scale (top of
+   this file) and the two box-shadows below. The hover lives on the wrapper, not
+   the <a>, so it works for covers that aren't links (e.g. "coming soon"). */
 .release-cover a { display: block; }
-.release-cover img { width: 100%; height: auto; }
-.release-cover a:hover { opacity: 0.9; }
+.release-cover img {
+  width: 100%; height: auto;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+  transition: transform 0.45s cubic-bezier(0.22, 0.7, 0.3, 1),
+              box-shadow 0.45s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+.release-cover:hover img {
+  transform: scale(var(--cover-hover-scale, 1.04));
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .release-cover img { transition: none; }
+  .release-cover:hover img { transform: none; }
+}
 
 /* Release cover shown through a tilted-square "window" — a 45°-rotated square,
    i.e. a diamond. Opt in per cover by adding the `clip-diamond` class to a
@@ -650,8 +702,25 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   from { grid-template-rows: 0fr; opacity: 0; }
   to   { grid-template-rows: 1fr; opacity: 1; }
 }
+
+/* Closing. A <details> un-renders its content the moment `open` is removed, so
+   on its own it snaps shut. js/site.js cancels that, adds `.closing` to play
+   this reverse animation, then closes it for real when the animation ends — so
+   both directions run the same 0.34s slide. These rules must stay AFTER the
+   [open] ones above: same specificity, so source order decides the winner. */
+.faq details.closing .faq-answer {
+  animation: faq-hide 0.34s cubic-bezier(0.25, 0.6, 0.3, 1);
+}
+/* the icon un-rotates at the same time (its own transition), not after */
+.faq details.closing summary::after { transform: rotate(0deg); }
+@keyframes faq-hide {
+  from { grid-template-rows: 1fr; opacity: 1; }
+  to   { grid-template-rows: 0fr; opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .faq details[open] .faq-answer { animation: none; }
+  .faq details[open] .faq-answer,
+  .faq details.closing .faq-answer { animation: none; }
   .faq summary::after { transition: none; }
 }
 
