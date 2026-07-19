@@ -865,21 +865,49 @@ content instead.
    size. Narrow the window and each frame gets taller and thinner, so the photo
    just crops in harder — never letterboxed, never distorted.
 
-**Column widths** use the same template as `.fgrid`, so the text lines up with
-the rest of the site: `.info-text` sits at `grid-column: 2 / 13` (the same
-columns "SOME ANSWERS" always used) and `.info-photo` at `14 / -1` — `-1` runs
-through the right gutter so the photos bleed to the screen edge. Change those two
-values to re-proportion the split.
+**Column widths — two full-bleed halves.** This section deliberately does **not**
+use the 1500px-capped `.fgrid` template the rest of the site uses. That cap left
+a dead margin on the left of wide screens and bunched the text toward the middle.
+Instead it's `grid-template-columns: 1fr 1fr`: `.info-text` takes the left half
+(inset only by `padding-inline: var(--gutter)`), `.info-photo` the right half out
+to the screen edge. Both halves grow with the window. Change the `1fr 1fr` to
+re-proportion the split (e.g. `45fr 55fr` for a wider photo).
 
-**Moving the seam.** Row 1 is only the `?` and one paragraph, so on its own it
-would be much shorter than row 2. `.info-text.info-r1 { padding-bottom: 5rem }`
-pads it out to balance the two. **Raise that number to push the seam between the
-photos down, lower it to pull the seam up** — it's the single dial for how the
-two photos divide the column.
+**Vertical centring, and moving the seam.** Each text block is centred against
+its photo (`align-self: center`, plus **symmetric** `padding-block`). The padding
+does two jobs at once: it makes the row taller than the text — giving the photo
+beside it a fuller frame — and, being equal top and bottom, it leaves the text
+optically centred in that frame.
+
+```css
+.info-text.info-r1 { padding-block: 7rem; }   /* the ? row */
+.info-text.info-r2 { padding-block: 5rem; }   /* the FAQ row */
+```
+
+Raise a row's value to make **that row's photo taller**; since row 1 sits above
+row 2, raising row 1 also pushes the **seam between the photos down** (and
+lowering it pulls the seam up). Keep the padding symmetric or the text stops
+being centred. `.info-text > :first-child { margin-top: 0 }` exists for the same
+reason — a top margin on the first heading would break the symmetry.
+
+**Type scales with the window** (desktop only — mobile keeps the site's normal
+sizes):
+
+```css
+.info-text              { font-size: clamp(0.95rem, 1.8vw, 1.25rem); }
+.info-answers           { font-size: clamp(1.9rem, 6.2vw, var(--h2-size)); }
+.info-text .faq summary { font-size: clamp(1.15rem, 2.7vw, 1.95rem); }
+```
+
+They're tuned so that around 1280px the sizes match the site's standard scale;
+above that they grow a little (so the wider column doesn't produce over-long
+lines) up to the caps, and below it they shrink — text only gets smaller when the
+screen actually makes it necessary.
 
 **Text alignment.** Everything in `.info-text` shares one left edge; only the `?`
-is centred (`.info-text .big-q { text-align: center }`). The vertical rhythm is
-the margins on `.big-q`, `.info-intro`, `.info-answers` and `.faq`.
+is centred (`.info-text .big-q { text-align: center }`). The horizontal inset is
+`padding-inline: var(--gutter)` — the single value for how far the text sits from
+the screen edge.
 
 **On mobile** (<768px) the grid rules drop away entirely and the section becomes
 plain block flow — which means **the DOM order is the reading order**:
@@ -1146,6 +1174,26 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-19 — info page: centred text, full-width halves, fluid type
+
+- **Both text blocks are now vertically centred against their photo** (they sat
+  at the top). Done with `align-self: center` plus **symmetric** `padding-block`
+  per row — the padding gives the photo a taller frame *and* keeps the text
+  centred in it. Zeroed the first child's `margin-top` so the symmetry holds.
+  Verified: both rows centre to within 0px, at 1280 and 1920.
+- **The section now spans full width.** Dropped the 1500px-capped `.fgrid`
+  template for `grid-template-columns: 1fr 1fr`, so the text starts near the left
+  edge (inset only by `--gutter`) and each half grows with the window. At 1920px
+  the copy now begins at 77px instead of ~210px and fills to the halfway point.
+- **Type scales with the window** on desktop: `clamp()` on the body copy,
+  "SOME ANSWERS" and the FAQ questions, tuned to match the site's normal scale
+  around 1280px, grow modestly above it, and shrink below — so text only gets
+  smaller when the screen requires it. Mobile sizes are untouched.
+- Everything from the previous pass still holds (verified): seam gap 0, opening a
+  FAQ item grows photo 2 only, photo 1 unmoved, seam flush, nothing overflowing
+  at 820px, and the mobile order unchanged.
+- §1.17 updated: full-bleed halves, the centring/seam dials, and the type clamps.
 
 ### 2026-07-19 — info page: each photo bound to its own section
 
