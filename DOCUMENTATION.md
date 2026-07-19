@@ -255,6 +255,29 @@ from CSS (`.faq` in `css/style.css`). Keep the inner `<div class="faq-answer">`
 wrapper — the open/close animation (§1.17) needs it. New blocks are picked up
 automatically; nothing needs registering.
 
+**Answers longer than one paragraph** need their `<p>`s wrapped in a single
+element, because the slide animates one grid row — a second child would sit in
+an implicit row that never collapses, and part of the answer would stay on
+screen. So:
+
+```html
+<div class="faq-answer">          <!-- ✅ one child, many paragraphs -->
+  <div>
+    <p>First paragraph.</p>
+    <p>Second paragraph.</p>
+  </div>
+</div>
+
+<div class="faq-answer">          <!-- ❌ two children — breaks the animation -->
+  <p>First paragraph.</p>
+  <p>Second paragraph.</p>
+</div>
+```
+
+Spacing between those paragraphs is handled by `.faq .faq-answer p + p`. The
+"WHAT ABOUT AI?" entry is the worked example. (A single-paragraph answer needs
+no wrapper — the `<p>` *is* the one child.)
+
 ### 1.4 Change colors
 
 Top of `css/style.css`:
@@ -720,7 +743,9 @@ and back up when closed — same 0.34s either way — while the `+` rolls into a
 - **The slide** is `grid-template-rows: 0fr → 1fr` on `.faq-answer`, animating a
   real height without a guessed `max-height` (so long answers can't get
   clipped). The inner element carries the padding and `overflow: hidden` so it
-  clips itself while the row is still short.
+  clips itself while the row is still short. Because that's a **single** grid
+  row, `.faq-answer` must hold exactly **one** child — multi-paragraph answers
+  wrap their `<p>`s in one `<div>` (§1.3).
 - **Closing needs the JS.** The browser drops a `<details>`'s content the instant
   `open` is removed, so left alone it snaps shut with nothing to animate.
   `wireFaq()` cancels that default click, adds `.closing` to play the reverse
@@ -952,6 +977,18 @@ host it under a subpath, the fix is to make the paths relative again and put the
 ## 6. Changelog
 
 Dates are the day the change was made (the rebuild began 2026-07-17).
+
+### 2026-07-18 — AI statement in the FAQ
+
+- Added a **"WHAT ABOUT AI?"** entry to the Info page FAQ — a short, plain-voice
+  distillation of §9A of the artist agreement (human authorship; no AI or
+  synthetic artists; no licensing of music, voice, likeness or metadata to AI
+  training or datasets; ordinary studio tools aren't the issue; honest about not
+  being able to police every scraper).
+- It's the site's first multi-paragraph answer, which surfaced a constraint:
+  `.faq-answer` animates a **single** grid row, so its `<p>`s are wrapped in one
+  `<div>`. Added `.faq .faq-answer p + p` spacing and documented the one-child
+  rule in §1.3 and §1.17.
 
 ### 2026-07-18 — clean slugs (deploy prep)
 
