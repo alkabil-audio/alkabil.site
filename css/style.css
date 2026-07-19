@@ -609,7 +609,10 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
 /* Tighter than the global h2 leading (1.4em): a large display title reads better
    set close, and the smaller half-leading means the cover — which aligns to the
    top of the title's BOX — lines up with the top of the letterforms too. */
-.release-title { text-transform: lowercase; line-height: 1.12em; }
+/* `none`, not just an absent property: .release-title is an <h2>, and the global
+   h1–h4 rule forces uppercase — so leaving this out would SHOUT the title rather
+   than render it as typed. Casing is controlled in the HTML. */
+.release-title { text-transform: none; line-height: 1.12em; }
 .release-desc p { margin-top: 1em; }
 .release-desc em { font-style: italic; }
 
