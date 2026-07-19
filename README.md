@@ -45,9 +45,11 @@ artist page, swap the newest release, edit the FAQ, and wire up the newsletter.
 - **Favicon**: `assets/favicon.png` (256×256, the label mark on black),
   rendered from `logo-white.png` by `tools/make-favicon.py` — rerun it after
   changing the logo (DOCUMENTATION.md §2).
-- **Layout**: sections reuse the original's 24-column grid placements — each
-  block carries its desktop grid area in a `--gd: row/col/row/col` custom
-  property (mobile just stacks in document order). See DOCUMENTATION.md §2.
+- **Layout**: no positioning coordinates anywhere — every section is a plain
+  flex/grid container that sizes itself to its content, with one or two obvious
+  dials (a `max-width`, a `padding`) in `css/style.css`. Editing copy never
+  means adjusting a layout. Mobile collapses to document order.
+  See DOCUMENTATION.md §2.
 - **Clean URLs, matching the old Squarespace paths** — `/`, `/info`,
   `/artists`, `/artists/yslas`. No `.html` in any link: GitHub Pages and
   Netlify both serve `info.html` at `/info`, so there's no build step. Links
