@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Subscription successful &mdash; ALKABIL</title>
+  <!-- root-absolute to match this page's other paths; resolves when deployed
+       at the domain root, like the "/" links here -->
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 21px; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: #000;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  .site-header {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 1.4rem 4vw;
+    text-align: center;
+  }
+  .site-header a {
+    color: #fff;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+  .nf-wrap {
+    min-height: 100vh;
+    display: grid;
+    align-content: center;
+    gap: 3rem;
+  }
+  .marquee { overflow: hidden; white-space: nowrap; display: flex; align-items: center; }
+  .marquee .track {
+    display: inline-flex;
+    flex-shrink: 0;
+    min-width: 100%;
+    animation: marquee-scroll 26s linear infinite;
+  }
+  .marquee.reverse .track { animation-direction: reverse; }
+  .marquee span {
+    text-transform: uppercase;
+    font-size: 3.9rem;
+    line-height: 1.2em;
+    padding-right: 2.2rem;
+    flex-shrink: 0;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) { .marquee .track { animation: none; } }
+  .nf-center { text-align: center; }
+  .nf-center a {
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 1.7rem;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
+  .nf-center a:hover { opacity: 0.6; }
+  @media (max-width: 767px) { .marquee span { font-size: 2.6rem; } }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="/">ALKABIL</a>
+  </header>
+
+  <main class="nf-wrap">
+    <div class="marquee" aria-label="404">
+      <div class="track" aria-hidden="true">
+        <span>Success!&nbsp;///</span><span>Success!&nbsp;///</span><span>Success!&nbsp;///</span>
+        <span>Success!&nbsp;///</span><span>Success!&nbsp;///</span><span>Success!&nbsp;///</span>
+      </div>
+    </div>
+    <div class="nf-center">
+      <a href="/">go back</a>
+    </div>
+    <div class="marquee reverse" aria-label="not found">
+      <div class="track" aria-hidden="true">
+        <span>Thank&nbsp;you!&nbsp;\\\</span><span>Thank&nbsp;you!&nbsp;\\\</span><span>Thank&nbsp;you!&nbsp;\\\</span>
+        <span>Thank&nbsp;you!&nbsp;\\\</span><span>Thank&nbsp;you!&nbsp;\\\</span><span>Thank&nbsp;you!&nbsp;\\\</span>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
