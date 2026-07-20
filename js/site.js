@@ -16,7 +16,7 @@
    themselves. `id` must match the filename (artists/<id>.html, served at
    /artists/<id>) and the page's data-artist. */
 const ARTISTS = [
-  { id: 'yslas',       name: 'Yslas',          img: '/assets/yslas.jpg' },
+  { id: 'yslas',       name: 'Yslas',          img: '/assets/yslas-headshot.jpg' },
   // `focus` (optional): CSS object-position for the grid photo when it's a tall
   // portrait cropped to fill — anchors the crop so the face shows. Default is
   // center; 'center 12%' pulls it near the top. See DOCUMENTATION §1.1.4.
