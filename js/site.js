@@ -285,22 +285,6 @@ function buildHeroParallax() {
   addEventListener('resize', () => { clearTimeout(t); t = setTimeout(build, 200); });
 }
 
-/* ============ NEWSLETTER ============
-   Submit in the background, then show the thank-you note. A static host won't
-   store it (see DOCUMENTATION §1.7). */
-function wireNewsletter() {
-  const box = document.querySelector('.newsletter');
-  if (!box) return;
-  const form = box.querySelector('form');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const data = new URLSearchParams(new FormData(form));
-    fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: data })
-      .catch(() => { /* no form backend — ignore */ })
-      .finally(() => box.classList.add('submitted'));
-  });
-}
-
 /* ============ FAQ close animation ============
    Opening is pure CSS: the answer is only rendered once <details> is open, so a
    keyframe plays the moment it appears (css/style.css). Closing can't work that
@@ -349,7 +333,6 @@ function init() {
   document.querySelectorAll('[data-artist-grid]').forEach(buildArtistGrid);
   buildMarquees();
   buildHeroParallax();
-  wireNewsletter();
   wireFaq();
 }
 

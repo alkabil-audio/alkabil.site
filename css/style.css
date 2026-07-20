@@ -927,9 +927,11 @@ body.menu-open .mobile-menu a:nth-child(6) { animation-delay: 0.31s; }
   transition: opacity 0.2s;
 }
 .newsletter button:hover { opacity: 0.75; }
-.newsletter .nl-thanks { display: none; margin-top: 1.2em; }
-.newsletter.submitted form { display: none; }
-.newsletter.submitted .nl-thanks { display: block; }
+.emailoctopus-form {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
 
 /* ---------------- Footer ---------------- */
 
